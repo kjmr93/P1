@@ -70,18 +70,18 @@
 
     <script>
         function filtrarTabla() {
-            let input = document.getElementById(\"filtro\").value.toUpperCase();
-            let table = document.getElementById(\"tablaEquipos\");
-            let tr = table.getElementsByTagName(\"tr\");
+            let input = document.getElementById("filtro").value.toUpperCase();
+            let table = document.getElementById("tablaEquipos");
+            let tr = table.getElementsByTagName("tr");
             for (let i = 1; i < tr.length; i++) {
-                let td = tr[i].getElementsByTagName(\"td\");
+                let td = tr[i].getElementsByTagName("td");
                 let mostrar = false;
                 for (let j = 0; j < td.length; j++) {
                     if (td[j] && td[j].innerHTML.toUpperCase().indexOf(input) > -1) {
                         mostrar = true;
                     }
                 }
-                tr[i].style.display = mostrar ? \"\" : \"none\";
+                tr[i].style.display = mostrar ? "" : "none";
             }
         }
     </script>
