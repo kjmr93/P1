@@ -1,9 +1,9 @@
 <?php
 // Conexión a la base de datos
-$servername = "localhost";
-$username = "tu_usuario";
-$password = "tu_contraseña";
-$dbname = "tu_base_de_datos";
+$servername = "";
+$username = "";
+$password = "";
+$dbname = "";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Obtener filtros de la petición prueba de cambio
+// Obtener filtros de la petición
 $filters = [
     'mac' => isset($_GET['filter-mac']) ? $_GET['filter-mac'] : '',
     'version' => isset($_GET['filter-version']) ? $_GET['filter-version'] : '',
