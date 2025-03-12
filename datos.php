@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Obtener filtros de la petición
+// Obtener filtros de la petición prueba de cambio
 $filters = [
     'mac' => isset($_GET['filter-mac']) ? $_GET['filter-mac'] : '',
     'version' => isset($_GET['filter-version']) ? $_GET['filter-version'] : '',
