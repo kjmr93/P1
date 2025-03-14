@@ -1,9 +1,9 @@
 <?php
 // Conexión
-$servername = "";
-$username = "";
+$servername = "localhost";
+$username = "root";
 $password = "";
-$dbname = "";
+$dbname = "pruebas";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -28,7 +28,7 @@ $serial = $_POST['serial'];
 $model = $_POST['model'];
 
 // Insertar datos en la base de datos
-$sql = "INSERT INTO equips (mac, version, admins, maquina, nomusuari, connexions, data_restauracio, restriccio, snap_installat, snap_vpns, snap_opera, windows, serial, model)
+$sql = "INSERT INTO datos (mac, version, admins, maquina, nomusuari, connexions, data_restauracio, restriccio, snap_installat, snap_vpns, snap_opera, windows, serial, model)
 VALUES ('$mac', '$version', '$admins', '$maquina', '$nomusuari', '$connexions', '$data_restauracio', '$restriccio', '$snap_installat', '$snap_vpns', '$snap_opera', '$windows', '$serial', '$model')";
 
 if ($conn->query($sql) === TRUE) {
