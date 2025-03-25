@@ -61,7 +61,7 @@ $order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' 
 $sql = "SELECT * FROM historial WHERE 1=1";
 
 foreach ($filters as $key => $value) {
-    if (!empty($value)) {
+    if (isset($value) && $value !== '') { // Cambiado para manejar correctamente el valor "0"
         $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
@@ -83,7 +83,7 @@ if (!$result) {
 $total_sql = "SELECT COUNT(*) FROM historial WHERE 1=1";
 
 foreach ($filters as $key => $value) {
-    if (!empty($value)) {
+    if (isset($value) && $value !== '') { // Cambiado para manejar correctamente el valor "0"
         $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
@@ -138,9 +138,10 @@ $total_pages = ceil($total_rows / $results_per_page);
             position: relative;
         }
         th a {
+            display: inline-block;
+            margin: 0 2px;
             color: white;
             text-decoration: none;
-            margin-left: 5px;
             font-size: 12px;
             padding: 2px 5px;
             border-radius: 3px;
@@ -189,9 +190,6 @@ $total_pages = ceil($total_rows / $results_per_page);
         }
         button:hover {
             background-color: #357ab8;
-        }
-        #filtered-results {
-            display: none;
         }
     </style>
 </head>
@@ -254,45 +252,72 @@ $total_pages = ceil($total_rows / $results_per_page);
         <button type="button" onclick="window.location.href='historial.php'">Limpiar filtros</button>
     </form>
     <table id="data-table">
-        <thead>
-            <tr>
-                <?php
-                $query_string = $_GET;
-                $query_string['order_dir'] = 'asc';
-                echo '<th>MAC <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'mac'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'mac', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Admins <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'admins'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'admins', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Nombre de Usuario <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nomusuari'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Nombre <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nom'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nom', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Apellidos <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'cognoms'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Curso <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'curs'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'curs', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Windows <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'windows'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'windows', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Restricción <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'restriccio'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                echo '<th>Fecha de Conexión <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'fecha_conexion'])) . '" class="asc">&#9650;</a> <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'fecha_conexion', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a></th>';
-                ?>
-            </tr>
-        </thead>
-        <tbody>
-             <?php
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['mac']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['admins']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['nom']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['cognoms']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['curs']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['windows']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['restriccio']) . "</td>";
-                        echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha_conexion']))) . "</td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='9'>No hay datos disponibles</td></tr>";
-                }
-                ?>
-        </tbody>
-    </table>
+    <thead>
+        <tr>
+            <?php
+            $query_string = $_GET;
+            $query_string['order_dir'] = 'asc';
+            echo '<th>MAC<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'mac'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'mac', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Admins<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'admins'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'admins', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Nombre de Usuario<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nomusuari'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Nombre<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nom'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'nom', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Apellidos<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'cognoms'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Curso<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'curs'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'curs', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Windows<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'windows'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'windows', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Restricción<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'restriccio'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            echo '<th>Fecha de Conexión<br>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'fecha_conexion'])) . '" class="asc">&#9650;</a>
+                <a href="?' . http_build_query(array_merge($query_string, ['order_by' => 'fecha_conexion', 'order_dir' => 'desc'])) . '" class="desc">&#9660;</a>
+            </th>';
+            ?>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['mac']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['admins']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['nom']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['cognoms']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['curs']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['windows']) . "</td>";
+                echo "<td>" . htmlspecialchars($row['restriccio']) . "</td>";
+                echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha_conexion']))) . "</td>";
+                echo "</tr>";
+            }
+        } else {
+            echo "<tr><td colspan='9'>No hay datos disponibles</td></tr>";
+        }
+        ?>
+    </tbody>
+</table>
 
     <div class="pagination">
         <?php
