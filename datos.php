@@ -34,7 +34,11 @@ $filters = [
     'model' => isset($_GET['filter-model']) ? $_GET['filter-model'] : ''
 ];
 
-// Construir la consulta SQL con paginación y filtros
+// Ordenación
+$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'mac';
+$order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
+
+// Construir la consulta SQL con paginación, filtros y ordenación
 $sql = "SELECT * FROM datos WHERE 1=1";
 
 foreach ($filters as $key => $value) {
@@ -43,7 +47,7 @@ foreach ($filters as $key => $value) {
     }
 }
 
-$sql .= " LIMIT $start_from, $results_per_page";
+$sql .= " ORDER BY $order_by $order_dir LIMIT $start_from, $results_per_page";
 
 // Ejecutar la consulta y verificar errores
 $result = $conn->query($sql);
@@ -101,6 +105,21 @@ $total_pages = ceil($total_rows / $results_per_page);
     th {
         background-color: #4a90e2;
         color: white;
+        position: relative;
+    }
+    th a {
+        color: white;
+        text-decoration: none;
+        margin-left: 5px;
+        font-size: 12px;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+    th a.asc {
+        background-color: #a8d5e2;
+    }
+    th a.desc {
+        background-color: #e2a8a8;
     }
     tr:nth-child(even) {
         background-color: #f2f2f2;
@@ -151,20 +170,20 @@ $total_pages = ceil($total_rows / $results_per_page);
     <table id="data-table">
         <thead>
             <tr>
-                <th>MAC</th>
-                <th>Versión</th>
-                <th>Admins</th>
-                <th>Máquina</th>
-                <th>Nombre de Usuario</th>
-                <th>Conexiones</th>
-                <th>Fecha de Restauración</th>
-                <th>Restricción</th>
-                <th>Snap Instalado</th>
-                <th>Snap VPNs</th>
-                <th>Snap Opera</th>
-                <th>Windows</th>
-                <th>Serial</th>
-                <th>Modelo</th>
+                <th>MAC <a href="?order_by=mac&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=mac&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Versión <a href="?order_by=version&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=version&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Admins <a href="?order_by=admins&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=admins&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Máquina <a href="?order_by=maquina&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=maquina&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Nombre de Usuario <a href="?order_by=nomusuari&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=nomusuari&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Conexiones <a href="?order_by=connexions&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=connexions&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Fecha de Restauración <a href="?order_by=data_restauracio&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=data_restauracio&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Restricción <a href="?order_by=restriccio&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=restriccio&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Snap Instalado <a href="?order_by=snap_installat&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=snap_installat&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Snap VPNs <a href="?order_by=snap_vpns&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=snap_vpns&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Snap Opera <a href="?order_by=snap_opera&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=snap_opera&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Windows <a href="?order_by=windows&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=windows&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Serial <a href="?order_by=serial&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=serial&order_dir=desc" class="desc">&#9660;</a></th>
+                <th>Modelo <a href="?order_by=model&order_dir=asc" class="asc">&#9650;</a> <a href="?order_by=model&order_dir=desc" class="desc">&#9660;</a></th>
             </tr>
         </thead>
         <tbody>
@@ -178,7 +197,7 @@ $total_pages = ceil($total_rows / $results_per_page);
                         echo "<td>" . htmlspecialchars($row['maquina']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['connexions']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['data_restauracio']) . "</td>";
+                        echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['data_restauracio']))) . "</td>";
                         echo "<td>" . htmlspecialchars($row['restriccio']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['snap_installat']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['snap_vpns']) . "</td>";
