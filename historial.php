@@ -191,10 +191,31 @@ $total_pages = ceil($total_rows / $results_per_page);
         button:hover {
             background-color: #357ab8;
         }
+        h1 .inicio-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: white;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+            padding: 5px 10px;
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        h1 .inicio-button:hover {
+            background-color: #4a90e2;
+            color: white;
+            border: 1px solid white;
+        }
     </style>
 </head>
 <body>
-    <h1>Historial de Conexiones</h1>
+<h1>
+        <a href="inicio.php" class="inicio-button">Inicio</a>
+        Historial de Conexiones
+    </h1>
     <h2>Filtrar Resultados</h2>
     <form method="GET" action="historial.php">
         <table id="filter-table">

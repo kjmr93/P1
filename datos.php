@@ -177,6 +177,7 @@ $total_pages = ceil($total_rows / $results_per_page);
         h1 .inicio-button:hover {
             background-color: #4a90e2;
             color: white;
+            border: 1px solid white;
         }
     </style>
 </head>
