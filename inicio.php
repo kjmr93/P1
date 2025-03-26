@@ -36,7 +36,6 @@ $conn->close();
     <title>Página de Inicio</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Estilos basados en historial.php */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -86,7 +85,7 @@ $conn->close();
             text-align: center;
             font-size: 16px;
             cursor: pointer;
-            flex: 1 1 calc(50% - 20px); /* 2 botones por línea */
+            flex: 1 1 calc(50% - 20px);
             max-width: calc(50% - 20px);
         }
         .boton:hover {
@@ -100,11 +99,11 @@ $conn->close();
         <?php echo $alert_message; ?>
     </div>
     <div class="botones-container">
-        <button class="boton" onclick="window.location.href='funcionalidad1.php'">Botón 1</button>
-        <button class="boton" onclick="window.location.href='funcionalidad2.php'">Botón 2</button>
-        <button class="boton" onclick="window.location.href='funcionalidad3.php'">Botón 3</button>
-        <button class="boton" onclick="window.location.href='funcionalidad4.php'">Botón 4</button>
-        <button class="boton" onclick="window.location.href='funcionalidad5.php'">Botón 5</button>
+        <button class="boton" onclick="window.location.href='historial.php'">Historial de Conexiones</button>
+        <button class="boton" onclick="window.location.href='incidencias.php'">Historial de Incidencias</button>
+        <button class="boton" onclick="window.location.href='datos.php'">Datos de Equipos</button>
+        <button class="boton" onclick="window.location.href='usuarios.php'">Datos de Usuarios</button>
+        <button class="boton" onclick="window.location.href='funcionalidad5.php'">Datos de Antenas</button>
         <button class="boton" onclick="window.location.href='funcionalidad6.php'">Botón 6</button>
         <button class="boton" onclick="window.location.href='funcionalidad7.php'">Botón 7</button>
         <button class="boton" onclick="window.location.href='funcionalidad8.php'">Botón 8</button>

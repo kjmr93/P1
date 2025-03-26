@@ -42,7 +42,7 @@ $order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' 
 $sql = "SELECT * FROM datos WHERE 1=1";
 
 foreach ($filters as $key => $value) {
-    if (!empty($value)) {
+    if (isset($value) && $value !== '') {
         $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
@@ -59,7 +59,7 @@ if (!$result) {
 $total_sql = "SELECT COUNT(*) FROM datos WHERE 1=1";
 
 foreach ($filters as $key => $value) {
-    if (!empty($value)) {
+    if (isset($value) && $value !== '') {
         $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
@@ -145,7 +145,7 @@ $total_pages = ceil($total_rows / $results_per_page);
         form {
             margin: 20px;
         }
-        input[type="text"] {
+        input[type="text"], select {
             width: 100%;
             padding: 8px;
             margin: 4px 0;
@@ -211,7 +211,18 @@ $total_pages = ceil($total_rows / $results_per_page);
             <tbody>
                 <tr>
                     <?php foreach ($filters as $key => $value): ?>
-                        <td><input type="text" name="filter-<?= $key ?>" value="<?= htmlspecialchars($value) ?>" placeholder="Filtrar <?= ucfirst($key) ?>"></td>
+                        <?php if ($key === 'restriccio'): ?>
+                            <td>
+                                <select name="filter-restriccio">
+                                    <option value="">Filtrar Restricción</option>
+                                    <option value="0" <?= $filters['restriccio'] === '0' ? 'selected' : '' ?>>0</option>
+                                    <option value="1" <?= $filters['restriccio'] === '1' ? 'selected' : '' ?>>1</option>
+                                    <option value="2" <?= $filters['restriccio'] === '2' ? 'selected' : '' ?>>2</option>
+                                </select>
+                            </td>
+                        <?php else: ?>
+                            <td><input type="text" name="filter-<?= $key ?>" value="<?= htmlspecialchars($value) ?>" placeholder="Filtrar <?= ucfirst($key) ?>"></td>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </tr>
             </tbody>
@@ -221,87 +232,87 @@ $total_pages = ceil($total_rows / $results_per_page);
     </form>
 
     <table id="data-table">
-    <thead>
-        <tr>
-            <th>MAC<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Versión<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'version', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'version', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Admins<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'admins', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'admins', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Máquina<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'maquina', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'maquina', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Nombre de Usuario<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Conexiones<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'connexions', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'connexions', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Fecha de Restauración<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'data_restauracio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'data_restauracio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Restricción<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Snap Instalado<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Snap VPNs<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Snap Opera<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Windows<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Serial<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-            <th>Modelo<br>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'model', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'model', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-            </th>
-        </tr>
+        <thead>
+            <tr>
+                <th>MAC<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Versión<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'version', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'version', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Admins<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'admins', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'admins', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Máquina<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'maquina', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'maquina', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Nombre de Usuario<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Conexiones<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'connexions', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'connexions', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Fecha de Restauración<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'data_restauracio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'data_restauracio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Restricción<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Snap Instalado<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Snap VPNs<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Snap Opera<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Windows<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Serial<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Modelo<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'model', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'model', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+            </tr>
         </thead>
-    <tbody>
-    <?php
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>";
-            foreach ($row as $key => $value) {
-                if ($key === 'data_restauracio') {
-                    $formatted_date = date('d-m-Y', strtotime($value));
-                    echo "<td>" . htmlspecialchars($formatted_date) . "</td>";
-                } else {
-                    echo "<td>" . htmlspecialchars($value) . "</td>";
+        <tbody>
+            <?php
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>";
+                    foreach ($row as $key => $value) {
+                        if ($key === 'data_restauracio') {
+                            $formatted_date = date('d-m-Y', strtotime($value));
+                            echo "<td>" . htmlspecialchars($formatted_date) . "</td>";
+                        } else {
+                            echo "<td>" . htmlspecialchars($value) . "</td>";
+                        }
+                    }
+                    echo "</tr>";
                 }
+            } else {
+                echo "<tr><td colspan='14'>No hay datos disponibles</td></tr>";
             }
-            echo "</tr>";
-        }
-    } else {
-        echo "<tr><td colspan='14'>No hay datos disponibles</td></tr>";
-    }
-    ?>
-</tbody>
-</table>
+            ?>
+        </tbody>
+    </table>
 
     <div class="pagination">
         <?php
