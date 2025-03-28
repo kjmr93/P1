@@ -59,15 +59,15 @@ $total_pages = ceil($total_rows / $results_per_page);
             margin: 0;
         }
         table {
-            width: auto;
+            width: 40%; /* Ajustar el ancho total de la tabla */
+            margin: 20px auto; /* Centrar la tabla */
             border-collapse: collapse;
-            margin: 20px 0;
         }
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            width: 250px;
+            width: 20%; /* Ajustar el ancho de cada columna */
         }
         th {
             background-color: #4a90e2;
