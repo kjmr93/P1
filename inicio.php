@@ -103,7 +103,7 @@ $conn->close();
         <button class="boton" onclick="window.location.href='incidencias.php'">Historial de Incidencias</button>
         <button class="boton" onclick="window.location.href='datos.php'">Datos de Equipos</button>
         <button class="boton" onclick="window.location.href='usuarios.php'">Datos de Usuarios</button>
-        <button class="boton" onclick="window.location.href='funcionalidad5.php'">Datos de Antenas</button>
+        <button class="boton" onclick="window.location.href='antenas.php'">Datos de Antenas</button>
         <button class="boton" onclick="window.location.href='funcionalidad6.php'">Botón 6</button>
         <button class="boton" onclick="window.location.href='funcionalidad7.php'">Botón 7</button>
         <button class="boton" onclick="window.location.href='funcionalidad8.php'">Botón 8</button>
