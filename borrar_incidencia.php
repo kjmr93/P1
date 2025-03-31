@@ -11,29 +11,24 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Verificar si se recibió el valor de 'incidencia'
-if (isset($_POST['incidencia']) && !empty($_POST['incidencia'])) {
-    $incidencia = $conn->real_escape_string($_POST['incidencia']);
+// Obtener el id de la incidencia a borrar
+$id = $_POST['id'];
 
-    // Eliminar la incidencia de la tabla
-    $sql = "DELETE FROM incidencias WHERE incidencia = '$incidencia'";
+// Borrar la incidencia con el id proporcionado
+$sql = "DELETE FROM incidencias WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
 
-    if ($conn->query($sql) === TRUE) {
-        // Redirigir de vuelta a incidencias.php después de eliminar
-        $conn->close();
-        header("Location: incidencias.php");
-        exit();
-    } else {
-        echo "Error al eliminar la incidencia: " . $conn->error;
-    }
+if ($stmt->execute()) {
+    echo "Incidencia borrada correctamente";
 } else {
-    echo "No se recibió una incidencia válida para eliminar.";
+    echo "Error al borrar la incidencia: " . $conn->error;
 }
 
-// Cerrar la conexión
+$stmt->close();
 $conn->close();
 
-// Redirigir de vuelta a incidencias.php si no se recibió una incidencia válida
+// Redirigir de vuelta a la página de incidencias
 header("Location: incidencias.php");
 exit();
 ?>

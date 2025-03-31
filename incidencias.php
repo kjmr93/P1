@@ -11,13 +11,22 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Obtener valores únicos de la columna 'restriccion'
-$restriccion_sql = "SELECT DISTINCT restriccion FROM incidencias";
-$restriccion_result = $conn->query($restriccion_sql);
-$restriccion_options = [];
-if ($restriccion_result->num_rows > 0) {
-    while ($row = $restriccion_result->fetch_assoc()) {
-        $restriccion_options[] = $row['restriccion'];
+// Obtener valores únicos de las columnas 'restriccion_equipo' y 'restriccion_usuario'
+$restriccion_equipo_sql = "SELECT DISTINCT restriccion_equipo FROM incidencias";
+$restriccion_equipo_result = $conn->query($restriccion_equipo_sql);
+$restriccion_equipo_options = [];
+if ($restriccion_equipo_result->num_rows > 0) {
+    while ($row = $restriccion_equipo_result->fetch_assoc()) {
+        $restriccion_equipo_options[] = $row['restriccion_equipo'];
+    }
+}
+
+$restriccion_usuario_sql = "SELECT DISTINCT restriccion_usuario FROM incidencias";
+$restriccion_usuario_result = $conn->query($restriccion_usuario_sql);
+$restriccion_usuario_options = [];
+if ($restriccion_usuario_result->num_rows > 0) {
+    while ($row = $restriccion_usuario_result->fetch_assoc()) {
+        $restriccion_usuario_options[] = $row['restriccion_usuario'];
     }
 }
 
@@ -30,7 +39,10 @@ $start_from = ($page - 1) * $results_per_page;
 $filters = [
     'incidencia' => isset($_GET['filter-incidencia']) ? $_GET['filter-incidencia'] : '',
     'usuario' => isset($_GET['filter-usuario']) ? $_GET['filter-usuario'] : '',
-    'restriccion' => isset($_GET['filter-restriccion']) ? $_GET['filter-restriccion'] : '',
+    'equipo' => isset($_GET['filter-equipo']) ? $_GET['filter-equipo'] : '',
+    'clase' => isset($_GET['filter-clase']) ? $_GET['filter-clase'] : '',
+    'restriccion_equipo' => isset($_GET['filter-restriccion_equipo']) ? $_GET['filter-restriccion_equipo'] : '',
+    'restriccion_usuario' => isset($_GET['filter-restriccion_usuario']) ? $_GET['filter-restriccion_usuario'] : '',
     'fecha' => isset($_GET['filter-fecha']) ? $_GET['filter-fecha'] : ''
 ];
 
@@ -39,11 +51,11 @@ $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : '';
 $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : '';
 
 // Ordenación
-$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'incidencia';
-$order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
+$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'fecha'; // Ordenar por fecha por defecto
+$order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc'; // Orden ascendente por defecto
 
 // Construir la consulta SQL con paginación, filtros y ordenación
-$sql = "SELECT incidencia, usuario, restriccion, fecha FROM incidencias WHERE 1=1";
+$sql = "SELECT id, incidencia, usuario, equipo, clase, restriccion_equipo, restriccion_usuario, fecha FROM incidencias WHERE 1=1";
 
 foreach ($filters as $key => $value) {
     if (isset($value) && $value !== '') {
@@ -56,6 +68,7 @@ if (!empty($fecha_inicio) && !empty($fecha_fin)) {
     $sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin_adjusted) . "'";
 }
 
+// Ordenar por fecha de más antigua a más nueva
 $sql .= " ORDER BY $order_by $order_dir LIMIT $start_from, $results_per_page";
 
 // Ejecutar la consulta y verificar errores
@@ -178,6 +191,15 @@ $total_pages = ceil($total_rows / $results_per_page);
             border: 1px solid white;
         }
     </style>
+    <script>
+        function confirmarBorrado(form) {
+            const confirmacion = confirm("¿Estás seguro de que deseas borrar esta incidencia?");
+            if (confirmacion) {
+                form.submit();
+            }
+            return false;
+        }
+    </script>
 </head>
 <body>
     <h1>
@@ -191,7 +213,10 @@ $total_pages = ceil($total_rows / $results_per_page);
                 <tr>
                     <th>Incidencia</th>
                     <th>Usuario</th>
-                    <th>Restricción</th>
+                    <th>Equipo</th>
+                    <th>Clase</th>
+                    <th>Restricción Equipo</th>
+                    <th>Restricción Usuario</th>
                     <th>Fecha</th>
                 </tr>
             </thead>
@@ -199,11 +224,23 @@ $total_pages = ceil($total_rows / $results_per_page);
                 <tr>
                     <td><input type="text" name="filter-incidencia" placeholder="Incidencia" value="<?php echo htmlspecialchars($filters['incidencia']); ?>"></td>
                     <td><input type="text" name="filter-usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($filters['usuario']); ?>"></td>
+                    <td><input type="text" name="filter-equipo" placeholder="Equipo" value="<?php echo htmlspecialchars($filters['equipo']); ?>"></td>
+                    <td><input type="text" name="filter-clase" placeholder="Clase" value="<?php echo htmlspecialchars($filters['clase']); ?>"></td>
                     <td>
-                        <select name="filter-restriccion">
-                            <option value="">Seleccionar Restricción</option>
-                            <?php foreach ($restriccion_options as $option): ?>
-                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion'] == $option ? 'selected' : ''; ?>>
+                        <select name="filter-restriccion_equipo">
+                            <option value="">Seleccionar Restricción Equipo</option>
+                            <?php foreach ($restriccion_equipo_options as $option): ?>
+                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_equipo'] == $option ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($option); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="filter-restriccion_usuario">
+                            <option value="">Seleccionar Restricción Usuario</option>
+                            <?php foreach ($restriccion_usuario_options as $option): ?>
+                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_usuario'] == $option ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($option); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -226,7 +263,10 @@ $total_pages = ceil($total_rows / $results_per_page);
             <tr>
                 <th>Incidencia</th>
                 <th>Usuario</th>
-                <th>Restricción</th>
+                <th>Equipo</th>
+                <th>Clase</th>
+                <th>Restricción Equipo</th>
+                <th>Restricción Usuario</th>
                 <th>Fecha</th>
                 <th>Acciones</th>
             </tr>
@@ -238,22 +278,33 @@ $total_pages = ceil($total_rows / $results_per_page);
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['incidencia']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['usuario']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['restriccion']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['equipo']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['clase']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['restriccion_equipo']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['restriccion_usuario']) . "</td>";
                     echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha']))) . "</td>";
                     echo "<td>
-                            <form method='POST' action='borrar_incidencia.php' style='display:inline;'>
-                                <input type='hidden' name='incidencia' value='" . htmlspecialchars($row['incidencia']) . "'>
+                            <form method='POST' action='borrar_incidencia.php' style='display:inline;' onsubmit='return confirmarBorrado(this);'>
+                                <input type='hidden' name='id' value='" . htmlspecialchars($row['id']) . "'>
                                 <button type='submit'>Borrar incidencia</button>
                             </form>
                           </td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='5'>No hay datos disponibles</td></tr>";
+                echo "<tr><td colspan='8'>No hay datos disponibles</td></tr>";
             }
             ?>
         </tbody>
     </table>
+    <div class="pagination">
+        <?php
+        for ($i = 1; $i <= $total_pages; $i++) {
+            $query_params = array_merge($_GET, ['page' => $i]);
+            echo "<a href='?" . http_build_query($query_params) . "'>" . $i . "</a> ";
+        }
+        ?>
+    </div>
 </body>
 </html>
 
