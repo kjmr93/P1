@@ -132,7 +132,7 @@ $conn->close();
 <body>
     <h1>
         <a href="inicio.php" class="inicio-button">Inicio</a>
-        Usuarios Inactivos
+        Últimas Conexiones
     </h1>
     <form method="GET" action="ultimas_conexiones.php">
         <label for="dias">Días sin conexión:</label>
