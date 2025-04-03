@@ -27,6 +27,9 @@ $serial = $_POST['serial'];
 $model = $_POST['model'];
 $macssid = $_POST['macssid']; // Nueva línea para capturar el valor de macssid
 
+// Obtener la fecha y hora actuales del sistema
+$fecha_conexion = date('Y-m-d H:i:s'); // Formato de fecha y hora: YYYY-MM-DD HH:MM:SS
+
 // Extraer el texto entre los dos puntos y la primera coma de "connexions"
 $nomusuari = '';
 if (strpos($connexions, ':') !== false && strpos($connexions, ',') !== false) {
@@ -51,8 +54,8 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 // Insertar datos en la tabla "historial"
-$sql = "INSERT INTO historial (mac, version, admins, maquina, nomusuari, connexions, data_restauracio, restriccio, snap_installat, snap_vpns, snap_opera, windows, serial, model, macssid, restriccio_usuari)
-VALUES ('$mac', '$version', '$admins', '$maquina', '$nomusuari', '$connexions', '$data_restauracio', '$restriccio', '$snap_installat', '$snap_vpns', '$snap_opera', '$windows', '$serial', '$model', '$macssid', '$restriccio_usuari')";
+$sql = "INSERT INTO historial (mac, version, admins, maquina, nomusuari, connexions, data_restauracio, restriccio, snap_installat, snap_vpns, snap_opera, windows, serial, model, macssid, restriccio_usuari, fecha_conexion)
+VALUES ('$mac', '$version', '$admins', '$maquina', '$nomusuari', '$connexions', '$data_restauracio', '$restriccio', '$snap_installat', '$snap_vpns', '$snap_opera', '$windows', '$serial', '$model', '$macssid', '$restriccio_usuari', '$fecha_conexion')";
 
 if ($conn->query($sql) === TRUE) {
     echo "Datos insertados correctamente en la tabla historial";
