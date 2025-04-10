@@ -101,7 +101,7 @@ $conn->close();
     <div class="botones-container">
         <button class="boton" onclick="window.location.href='historial.php'">Historial de Conexiones</button>
         <button class="boton" onclick="window.location.href='incidencias.php'">Historial de Incidencias</button>
-        <button class="boton" onclick="window.location.href='datos.php'">Datos de Equipos</button>
+        <button class="boton" onclick="window.location.href='equipos.php'">Datos de Equipos</button>
         <button class="boton" onclick="window.location.href='usuarios.php'">Datos de Usuarios</button>
         <button class="boton" onclick="window.location.href='antenas.php'">Datos de Antenas</button>
         <button class="boton" onclick="window.location.href='ultimas_conexiones.php'">Últimas Conexiones</button>

@@ -26,10 +26,6 @@ $filters = [
     'connexions' => isset($_GET['filter-connexions']) ? $_GET['filter-connexions'] : '',
     'data_restauracio' => isset($_GET['filter-data_restauracio']) ? $_GET['filter-data_restauracio'] : '',
     'restriccio' => isset($_GET['filter-restriccio']) ? $_GET['filter-restriccio'] : '',
-    'snap_installat' => isset($_GET['filter-snap_installat']) ? $_GET['filter-snap_installat'] : '',
-    'snap_vpns' => isset($_GET['filter-snap_vpns']) ? $_GET['filter-snap_vpns'] : '',
-    'snap_opera' => isset($_GET['filter-snap_opera']) ? $_GET['filter-snap_opera'] : '',
-    'windows' => isset($_GET['filter-windows']) ? $_GET['filter-windows'] : '',
     'serial' => isset($_GET['filter-serial']) ? $_GET['filter-serial'] : '',
     'model' => isset($_GET['filter-model']) ? $_GET['filter-model'] : ''
 ];
@@ -39,7 +35,7 @@ $order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'mac';
 $order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
 
 // Construir la consulta SQL con paginación, filtros y ordenación
-$sql = "SELECT * FROM datos WHERE 1=1";
+$sql = "SELECT mac, version, admins, maquina, nomusuari, connexions, data_restauracio, restriccio, serial, model FROM equipos WHERE 1=1";
 
 foreach ($filters as $key => $value) {
     if (isset($value) && $value !== '') {
@@ -56,7 +52,7 @@ if (!$result) {
 }
 
 // Obtener el número total de resultados para la paginación
-$total_sql = "SELECT COUNT(*) FROM datos WHERE 1=1";
+$total_sql = "SELECT COUNT(*) FROM equipos WHERE 1=1";
 
 foreach ($filters as $key => $value) {
     if (isset($value) && $value !== '') {
@@ -188,7 +184,7 @@ $total_pages = ceil($total_rows / $results_per_page);
     </h1>
 
     <h2>Filtrar Resultados</h2>
-    <form method="GET" action="datos.php">
+    <form method="GET" action="equipos.php">
         <table id="filter-table">
             <thead>
                 <tr>
@@ -200,10 +196,6 @@ $total_pages = ceil($total_rows / $results_per_page);
                     <th>Conexiones</th>
                     <th>Fecha de Restauración</th>
                     <th>Restricción</th>
-                    <th>Snap Instalado</th>
-                    <th>Snap VPNs</th>
-                    <th>Snap Opera</th>
-                    <th>Windows</th>
                     <th>Serial</th>
                     <th>Modelo</th>
                 </tr>
@@ -211,24 +203,13 @@ $total_pages = ceil($total_rows / $results_per_page);
             <tbody>
                 <tr>
                     <?php foreach ($filters as $key => $value): ?>
-                        <?php if ($key === 'restriccio'): ?>
-                            <td>
-                                <select name="filter-restriccio">
-                                    <option value="">Filtrar Restricción</option>
-                                    <option value="0" <?= $filters['restriccio'] === '0' ? 'selected' : '' ?>>0</option>
-                                    <option value="1" <?= $filters['restriccio'] === '1' ? 'selected' : '' ?>>1</option>
-                                    <option value="2" <?= $filters['restriccio'] === '2' ? 'selected' : '' ?>>2</option>
-                                </select>
-                            </td>
-                        <?php else: ?>
-                            <td><input type="text" name="filter-<?= $key ?>" value="<?= htmlspecialchars($value) ?>" placeholder="Filtrar <?= ucfirst($key) ?>"></td>
-                        <?php endif; ?>
+                        <td><input type="text" name="filter-<?= $key ?>" value="<?= htmlspecialchars($value) ?>" placeholder="Filtrar <?= ucfirst($key) ?>"></td>
                     <?php endforeach; ?>
                 </tr>
             </tbody>
         </table>
         <button type="submit">Filtrar</button>
-        <button type="button" onclick="window.location.href='datos.php'">Limpiar filtros</button>
+        <button type="button" onclick="window.location.href='equipos.php'">Limpiar filtros</button>
     </form>
 
     <table id="data-table">
@@ -266,22 +247,6 @@ $total_pages = ceil($total_rows / $results_per_page);
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                 </th>
-                <th>Snap Instalado<br>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_installat', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-                </th>
-                <th>Snap VPNs<br>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_vpns', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-                </th>
-                <th>Snap Opera<br>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'snap_opera', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-                </th>
-                <th>Windows<br>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'windows', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-                </th>
                 <th>Serial<br>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'serial', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
@@ -308,7 +273,7 @@ $total_pages = ceil($total_rows / $results_per_page);
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='14'>No hay datos disponibles</td></tr>";
+                echo "<tr><td colspan='10'>No hay datos disponibles</td></tr>";
             }
             ?>
         </tbody>
