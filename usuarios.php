@@ -145,8 +145,9 @@ $total_pages = ceil($total_rows / $results_per_page);
             background-color: #ddd;
         }
         .pagination {
-            text-align: center;
-            margin: 20px 0;
+            text-align: center; /* Centrar el contenido */
+            margin: 20px auto; /* Espaciado superior e inferior */
+            padding: 10px 0; /* Mismo padding arriba y abajo */
         }
         .pagination a {
             color: #4a90e2;
@@ -154,9 +155,24 @@ $total_pages = ceil($total_rows / $results_per_page);
             text-decoration: none;
             border: 1px solid #ddd;
             margin: 0 4px;
+            display: inline-block;
         }
+
         .pagination a:hover {
             background-color: #ddd;
+        }
+
+        .pagination a.active {
+            background-color: #4a90e2;
+            color: white;
+            border: 1px solid #4a90e2;
+        }
+
+        .pagination span {
+            padding: 8px 16px;
+            color: #999;
+            margin: 0 4px;
+            display: inline-block;
         }
         form {
             margin: 20px;
@@ -194,6 +210,28 @@ $total_pages = ceil($total_rows / $results_per_page);
             background-color: #4a90e2;
             color: white;
             border: 1px solid white;
+        }
+        /* Estilo para el desplegable y botón en la misma línea */
+        .restriccion-form {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0; /* Eliminar márgenes */
+            padding: 0; /* Eliminar relleno */
+        }
+        .restriccion-form select {
+            width: auto;
+            padding: 2px 5px; /* Reducir relleno */
+            font-size: 14px; /* Ajustar tamaño de fuente */
+            height: auto; /* Ajustar altura */
+        }
+        .restriccion-form button {
+            padding: 2px 8px; /* Reducir relleno */
+            font-size: 14px; /* Ajustar tamaño de fuente */
+            height: auto; /* Ajustar altura */
+        }
+        td {
+            vertical-align: middle; /* Alinear contenido verticalmente */
         }
     </style>
 </head>
@@ -270,6 +308,7 @@ $total_pages = ceil($total_rows / $results_per_page);
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                 </th>
+                <th>Modificar Restricción</th>
             </tr>
         </thead>
         <tbody>
@@ -277,26 +316,73 @@ $total_pages = ceil($total_rows / $results_per_page);
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     echo "<tr>";
-                    foreach ($row as $key => $value) {
-                        echo "<td>" . htmlspecialchars($value) . "</td>";
-                    }
+                    echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['nom']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['cognoms']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['curs']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['restriccio']) . "</td>";
+                    echo "<td>
+                            <form method='POST' action='modificar_restriccion.php' class='restriccion-form'>
+                                <input type='hidden' name='nomusuari' value='" . htmlspecialchars($row['nomusuari']) . "'>
+                                <select name='nueva_restriccion'>
+                                    <option value='0'>0</option>
+                                    <option value='1'>1</option>
+                                    <option value='2'>2</option>
+                                </select>
+                                <button type='submit'>Confirmar</button>
+                            </form>
+                          </td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='5'>No hay datos disponibles</td></tr>";
+                echo "<tr><td colspan='6'>No hay datos disponibles</td></tr>";
             }
             ?>
         </tbody>
     </table>
-
+   
     <div class="pagination">
-        <?php
-        for ($i = 1; $i <= $total_pages; $i++) {
-            $query_params = array_merge($_GET, ['page' => $i]);
-            echo "<a href='?" . http_build_query($query_params) . "'>" . $i . "</a> ";
-        }
-        ?>
-    </div>
+            <?php
+            if ($total_pages > 1) {
+                // Mostrar las 3 primeras páginas
+                for ($i = 1; $i <= 3 && $i <= $total_pages; $i++) {
+                    if ($i == $page) {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "' class='active'>$i</a> ";
+                    } else {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "'>$i</a> ";
+                    }
+                }
+
+                // Mostrar puntos suspensivos si la página actual está lejos de las primeras páginas
+                if ($page > 5) {
+                    echo "<span>...</span> ";
+                }
+
+                // Mostrar la página inmediatamente anterior, la actual y la siguiente
+                for ($i = max(4, $page - 1); $i <= min($total_pages - 3, $page + 1); $i++) {
+                    if ($i == $page) {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "' class='active'>$i</a> ";
+                    } else {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "'>$i</a> ";
+                    }
+                }
+
+                // Mostrar puntos suspensivos si la página actual está lejos de las últimas páginas
+                if ($page < $total_pages - 4) {
+                    echo "<span>...</span> ";
+                }
+
+                // Mostrar las 3 últimas páginas
+                for ($i = max($total_pages - 2, 4); $i <= $total_pages; $i++) {
+                    if ($i == $page) {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "' class='active'>$i</a> ";
+                    } else {
+                        echo "<a href='?" . http_build_query(array_merge($_GET, ['page' => $i])) . "'>$i</a> ";
+                    }
+                }
+            }
+            ?>
+        </div>
 </body>
 </html>
 

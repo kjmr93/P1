@@ -11,26 +11,44 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Filtros
+// Inicializar filtros
 $filters = [
-    'mac' => isset($_GET['filter-mac']) ? $_GET['filter-mac'] : '',
-    'nomusuari' => isset($_GET['filter-nomusuari']) ? $_GET['filter-nomusuari'] : '',
-    'nom' => isset($_GET['filter-nom']) ? $_GET['filter-nom'] : '',
-    'cognoms' => isset($_GET['filter-cognoms']) ? $_GET['filter-cognoms'] : '',
-    'curs' => isset($_GET['filter-curs']) ? $_GET['filter-curs'] : '',
-    'restriccio_equipo' => isset($_GET['filter-restriccio_equipo']) ? $_GET['filter-restriccio_equipo'] : '',
-    'restriccio_usuario' => isset($_GET['filter-restriccio_usuario']) ? $_GET['filter-restriccio_usuario'] : '',
-    'aula' => isset($_GET['filter-aula']) ? $_GET['filter-aula'] : '',
-    'fecha_conexion' => isset($_GET['filter-fecha_conexion']) ? $_GET['filter-fecha_conexion'] : ''
+    'mac' => '',
+    'nomusuari' => '',
+    'nom' => '',
+    'cognoms' => '',
+    'curs' => '',
+    'restriccio_equipo' => '',
+    'restriccio_usuario' => '',
+    'aula' => '',
+    'fecha_conexion' => ''
 ];
 
-// Obtener opciones únicas para los desplegables
+// Verificar si se ha enviado el formulario
+$form_submitted = !empty($_GET);
+
+// Si se ha enviado el formulario, asignar valores a los filtros
+if ($form_submitted) {
+    $filters = [
+        'mac' => isset($_GET['filter-mac']) ? $_GET['filter-mac'] : '',
+        'nomusuari' => isset($_GET['filter-nomusuari']) ? $_GET['filter-nomusuari'] : '',
+        'nom' => isset($_GET['filter-nom']) ? $_GET['filter-nom'] : '',
+        'cognoms' => isset($_GET['filter-cognoms']) ? $_GET['filter-cognoms'] : '',
+        'curs' => isset($_GET['filter-curs']) ? $_GET['filter-curs'] : '',
+        'restriccio_equipo' => isset($_GET['filter-restriccio_equipo']) ? $_GET['filter-restriccio_equipo'] : '',
+        'restriccio_usuario' => isset($_GET['filter-restriccio_usuario']) ? $_GET['filter-restriccio_usuario'] : '',
+        'aula' => isset($_GET['filter-aula']) ? $_GET['filter-aula'] : '',
+        'fecha_conexion' => isset($_GET['filter-fecha_conexion']) ? $_GET['filter-fecha_conexion'] : ''
+    ];
+}
+
+// Obtener valores únicos para los desplegables
 $cursos = [];
 $restriccion_equipos = [];
 $restriccion_usuarios = [];
 $clases_antena = [];
 
-// Obtener opciones únicas de "Curso"
+// Obtener valores únicos de "Curso"
 $result_cursos = $conn->query("SELECT DISTINCT curs FROM usuaris WHERE curs IS NOT NULL AND curs != ''");
 if ($result_cursos) {
     while ($row = $result_cursos->fetch_assoc()) {
@@ -38,7 +56,7 @@ if ($result_cursos) {
     }
 }
 
-// Obtener opciones únicas de "Restricción del Equipo"
+// Obtener valores únicos de "Restricción del Equipo"
 $result_restriccion_equipos = $conn->query("SELECT DISTINCT restriccio FROM historial WHERE restriccio IS NOT NULL");
 if ($result_restriccion_equipos) {
     while ($row = $result_restriccion_equipos->fetch_assoc()) {
@@ -46,7 +64,7 @@ if ($result_restriccion_equipos) {
     }
 }
 
-// Obtener opciones únicas de "Restricción del Usuario"
+// Obtener valores únicos de "Restricción del Usuario"
 $result_restriccion_usuarios = $conn->query("SELECT DISTINCT restriccio FROM usuaris WHERE restriccio IS NOT NULL");
 if ($result_restriccion_usuarios) {
     while ($row = $result_restriccion_usuarios->fetch_assoc()) {
@@ -54,7 +72,7 @@ if ($result_restriccion_usuarios) {
     }
 }
 
-// Obtener opciones únicas de "Clase de la Antena"
+// Obtener valores únicos de "Clase de la Antena"
 $result_clases_antena = $conn->query("SELECT DISTINCT aula FROM antenas WHERE aula IS NOT NULL AND aula != ''");
 if ($result_clases_antena) {
     while ($row = $result_clases_antena->fetch_assoc()) {
@@ -62,69 +80,92 @@ if ($result_clases_antena) {
     }
 }
 
-// Paginación
-$results_per_page = 20;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$start_from = ($page - 1) * $results_per_page;
+// Inicializar variables para la consulta
+$result = null;
+$total_pages = 0;
 
-// Construir la consulta SQL con las uniones necesarias
-$sql = "
-    SELECT 
-        h.mac,
-        h.nomusuari,
-        u.nom,
-        u.cognoms,
-        u.curs,
-        h.restriccio AS restriccio_equipo,
-        u.restriccio AS restriccio_usuario,
-        UPPER(a.aula) AS clase_antena,
-        h.fecha_conexion
-    FROM historial h
-    LEFT JOIN usuaris u ON h.nomusuari = u.nomusuari
-    LEFT JOIN antenas a ON UPPER(h.macssid) = a.mac
-    WHERE 1=1
-";
+// Solo ejecutar la consulta si se ha enviado el formulario
+if ($form_submitted) {
+    // Paginación
+    $results_per_page = 20;
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $start_from = ($page - 1) * $results_per_page;
 
-// Aplicar filtros
-foreach ($filters as $key => $value) {
-    if (!empty($value)) {
-        if ($key === 'fecha_conexion') {
-            $sql .= " AND h.fecha_conexion LIKE '%" . $conn->real_escape_string($value) . "%'";
-        } elseif ($key === 'restriccio_equipo') {
-            $sql .= " AND h.restriccio = " . (int)$value;
-        } elseif ($key === 'restriccio_usuario') {
-            $sql .= " AND u.restriccio = " . (int)$value;
-        } elseif ($key === 'aula') {
-            $sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
-        } else {
-            $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
+    // Construir la consulta SQL
+    $sql = "
+        SELECT 
+            h.mac,
+            h.nomusuari,
+            u.nom,
+            u.cognoms,
+            u.curs,
+            h.restriccio AS restriccio_equipo,
+            u.restriccio AS restriccio_usuario,
+            UPPER(a.aula) AS clase_antena,
+            h.fecha_conexion
+        FROM historial h
+        LEFT JOIN usuaris u ON h.nomusuari = u.nomusuari
+        LEFT JOIN antenas a ON UPPER(h.macssid) = a.mac
+        WHERE 1=1
+    ";
+
+    // Aplicar filtros
+    foreach ($filters as $key => $value) {
+        if (!empty($value)) {
+            if ($key === 'fecha_conexion') {
+                $sql .= " AND h.fecha_conexion LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } elseif ($key === 'restriccio_equipo') {
+                $sql .= " AND h.restriccio = " . (int)$value;
+            } elseif ($key === 'restriccio_usuario') {
+                $sql .= " AND u.restriccio = " . (int)$value;
+            } elseif ($key === 'aula') {
+                $sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } else {
+                $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
+            }
         }
     }
+
+    // Ordenación
+    $order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'h.fecha_conexion';
+    $order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
+    $sql .= " ORDER BY $order_by $order_dir LIMIT $start_from, $results_per_page";
+
+    // Ejecutar la consulta
+    $result = $conn->query($sql);
+    if (!$result) {
+        die("Error en la consulta: " . $conn->error);
+    }
+
+    // Obtener el número total de resultados para la paginación
+    $total_sql = "
+        SELECT COUNT(*) 
+        FROM historial h
+        LEFT JOIN usuaris u ON h.nomusuari = u.nomusuari
+        LEFT JOIN antenas a ON UPPER(h.macssid) = a.mac
+        WHERE 1=1
+    ";
+
+    foreach ($filters as $key => $value) {
+        if (!empty($value)) {
+            if ($key === 'fecha_conexion') {
+                $total_sql .= " AND h.fecha_conexion LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } elseif ($key === 'restriccio_equipo') {
+                $total_sql .= " AND h.restriccio = " . (int)$value;
+            } elseif ($key === 'restriccio_usuario') {
+                $total_sql .= " AND u.restriccio = " . (int)$value;
+            } elseif ($key === 'aula') {
+                $total_sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } else {
+                $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
+            }
+        }
+    }
+
+    $total_result = $conn->query($total_sql);
+    $total_rows = $total_result->fetch_row()[0];
+    $total_pages = ceil($total_rows / $results_per_page);
 }
-
-// Ordenación
-$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'h.fecha_conexion';
-$order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
-$sql .= " ORDER BY $order_by $order_dir LIMIT $start_from, $results_per_page";
-
-// Ejecutar la consulta
-$result = $conn->query($sql);
-if (!$result) {
-    die("Error en la consulta: " . $conn->error);
-}
-
-// Obtener el número total de resultados para la paginación
-$total_sql = "
-    SELECT COUNT(*) 
-    FROM historial h
-    LEFT JOIN usuaris u ON h.nomusuari = u.nomusuari
-    LEFT JOIN antenas a ON UPPER(h.macssid) = a.mac
-    WHERE 1=1
-";
-
-$total_result = $conn->query($total_sql);
-$total_rows = $total_result->fetch_row()[0];
-$total_pages = ceil($total_rows / $results_per_page);
 ?>
 
 <!DOCTYPE html>
@@ -262,16 +303,16 @@ $total_pages = ceil($total_rows / $results_per_page);
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="text" name="filter-mac" value="<?php echo htmlspecialchars($filters['mac']); ?>"></td>
-                    <td><input type="text" name="filter-nomusuari" value="<?php echo htmlspecialchars($filters['nomusuari']); ?>"></td>
-                    <td><input type="text" name="filter-nom" value="<?php echo htmlspecialchars($filters['nom']); ?>"></td>
-                    <td><input type="text" name="filter-cognoms" value="<?php echo htmlspecialchars($filters['cognoms']); ?>"></td>
+                    <td><input type="text" name="filter-mac" value="<?= htmlspecialchars($filters['mac']) ?>"></td>
+                    <td><input type="text" name="filter-nomusuari" value="<?= htmlspecialchars($filters['nomusuari']) ?>"></td>
+                    <td><input type="text" name="filter-nom" value="<?= htmlspecialchars($filters['nom']) ?>"></td>
+                    <td><input type="text" name="filter-cognoms" value="<?= htmlspecialchars($filters['cognoms']) ?>"></td>
                     <td>
                         <select name="filter-curs">
                             <option value="">Curso</option>
                             <?php foreach ($cursos as $curso): ?>
-                                <option value="<?php echo htmlspecialchars($curso); ?>" <?php echo $filters['curs'] == $curso ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($curso); ?>
+                                <option value="<?= htmlspecialchars($curso) ?>" <?= $filters['curs'] == $curso ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($curso) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -280,8 +321,8 @@ $total_pages = ceil($total_rows / $results_per_page);
                         <select name="filter-restriccio_equipo">
                             <option value="">Restricción</option>
                             <?php foreach ($restriccion_equipos as $restriccion): ?>
-                                <option value="<?php echo htmlspecialchars($restriccion); ?>" <?php echo $filters['restriccio_equipo'] == $restriccion ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($restriccion); ?>
+                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= $filters['restriccio_equipo'] == $restriccion ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($restriccion) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -290,8 +331,8 @@ $total_pages = ceil($total_rows / $results_per_page);
                         <select name="filter-restriccio_usuario">
                             <option value="">Restricción</option>
                             <?php foreach ($restriccion_usuarios as $restriccion): ?>
-                                <option value="<?php echo htmlspecialchars($restriccion); ?>" <?php echo $filters['restriccio_usuario'] == $restriccion ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($restriccion); ?>
+                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= $filters['restriccio_usuario'] == $restriccion ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($restriccion) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -300,92 +341,82 @@ $total_pages = ceil($total_rows / $results_per_page);
                         <select name="filter-aula">
                             <option value="">Clase</option>
                             <?php foreach ($clases_antena as $aula): ?>
-                                <option value="<?php echo htmlspecialchars($aula); ?>" <?php echo $filters['aula'] == $aula ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($aula); ?>
+                                <option value="<?= htmlspecialchars($aula) ?>" <?= $filters['aula'] == $aula ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($aula) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </td>
-                    <td><input type="text" name="filter-fecha_conexion" value="<?php echo htmlspecialchars($filters['fecha_conexion']); ?>"></td>
+                    <td><input type="text" name="filter-fecha_conexion" value="<?= htmlspecialchars($filters['fecha_conexion']) ?>"></td>
                 </tr>
             </tbody>
         </table>
         <button type="submit">Filtrar</button>
         <button type="button" onclick="window.location.href='historial.php'">Limpiar filtros</button>
     </form>
-    <table>
-    <thead>
-    <tr>
-        <th>MAC<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Nombre de Usuario<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Nombre<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Apellidos<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Curso<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Restricción del Equipo<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Restricción del Usuario<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_usuario', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_usuario', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Clase de la Antena<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase_antena', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase_antena', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-        <th>Fecha de Conexión<br>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'fecha_conexion', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
-            <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'fecha_conexion', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
-        </th>
-    </tr>
-</thead>
-        <tbody>
-            <?php
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row['mac']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['nom']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['cognoms']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['curs']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['restriccio_equipo']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['restriccio_usuario']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['clase_antena']) . "</td>";
-                    echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha_conexion']))) . "</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='9'>No hay datos disponibles</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
-    <div class="pagination">
-        <?php
-        for ($i = 1; $i <= $total_pages; $i++) {
-            echo "<a href='?page=$i'>$i</a> ";
-        }
-        ?>
-    </div>
+
+    <?php if ($form_submitted && $result && $result->num_rows > 0): ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>MAC<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'mac', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Nombre de Usuario<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nomusuari', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Nombre<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Apellidos<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Curso<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Restricción del Equipo<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Restricción del Usuario<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_usuario', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_usuario', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Clase de la Antena<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase_antena', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase_antena', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Fecha de Conexión<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'fecha_conexion', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'fecha_conexion', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['mac']) ?></td>
+                        <td><?= htmlspecialchars($row['nomusuari']) ?></td>
+                        <td><?= htmlspecialchars($row['nom']) ?></td>
+                        <td><?= htmlspecialchars($row['cognoms']) ?></td>
+                        <td><?= htmlspecialchars($row['curs']) ?></td>
+                        <td><?= htmlspecialchars($row['restriccio_equipo']) ?></td>
+                        <td><?= htmlspecialchars($row['restriccio_usuario']) ?></td>
+                        <td><?= htmlspecialchars($row['clase_antena']) ?></td>
+                        <td><?= htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha_conexion']))) ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    <?php elseif ($form_submitted): ?>
+        <p>No se encontraron resultados.</p>
+    <?php endif; ?>
 </body>
 </html>
 
-<?php
-$conn->close();
-?>
+<?php $conn->close(); ?>

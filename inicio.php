@@ -91,6 +91,16 @@ $conn->close();
         .boton:hover {
             background-color: #357ab8;
         }
+        .hidden {
+            display: none;
+        }
+        #importar-form {
+            margin-top: 10px;
+            text-align: center;
+        }
+        #importar-form input[type="file"] {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -107,6 +117,12 @@ $conn->close();
         <button class="boton" onclick="window.location.href='ultimas_conexiones.php'">Últimas Conexiones</button>
         <button class="boton" onclick="window.location.href='funcionalidad7.php'">Botón 7</button>
         <button class="boton" onclick="window.location.href='funcionalidad8.php'">Botón 8</button>
+        <button class="boton" onclick="window.location.href='exportar_bdd.php'">Exportar BDD</button>
+        <button class="boton" onclick="document.getElementById('importar-form').classList.toggle('hidden')">Importar BDD</button>
     </div>
+    <form id="importar-form" class="hidden" method="POST" action="importar_bdd.php" enctype="multipart/form-data">
+        <input type="file" name="sql_file" accept=".sql" required>
+        <button type="submit" class="boton">Subir y Restaurar</button>
+    </form>
 </body>
 </html>

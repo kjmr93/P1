@@ -202,9 +202,23 @@ $total_pages = ceil($total_rows / $results_per_page);
             </thead>
             <tbody>
                 <tr>
-                    <?php foreach ($filters as $key => $value): ?>
-                        <td><input type="text" name="filter-<?= $key ?>" value="<?= htmlspecialchars($value) ?>" placeholder="Filtrar <?= ucfirst($key) ?>"></td>
-                    <?php endforeach; ?>
+                    <td><input type="text" name="filter-mac" value="<?= htmlspecialchars($filters['mac']) ?>" placeholder="Filtrar MAC"></td>
+                    <td><input type="text" name="filter-version" value="<?= htmlspecialchars($filters['version']) ?>" placeholder="Filtrar Versión"></td>
+                    <td><input type="text" name="filter-admins" value="<?= htmlspecialchars($filters['admins']) ?>" placeholder="Filtrar Admins"></td>
+                    <td><input type="text" name="filter-maquina" value="<?= htmlspecialchars($filters['maquina']) ?>" placeholder="Filtrar Máquina"></td>
+                    <td><input type="text" name="filter-nomusuari" value="<?= htmlspecialchars($filters['nomusuari']) ?>" placeholder="Filtrar Nombre de Usuario"></td>
+                    <td><input type="text" name="filter-connexions" value="<?= htmlspecialchars($filters['connexions']) ?>" placeholder="Filtrar Conexiones"></td>
+                    <td><input type="text" name="filter-data_restauracio" value="<?= htmlspecialchars($filters['data_restauracio']) ?>" placeholder="Filtrar Fecha de Restauración"></td>
+                    <td>
+                        <select name="filter-restriccio">
+                            <option value="">Filtrar Restricción</option>
+                            <option value="0" <?= $filters['restriccio'] === "0" ? 'selected' : '' ?>>0</option>
+                            <option value="1" <?= $filters['restriccio'] === "1" ? 'selected' : '' ?>>1</option>
+                            <option value="2" <?= $filters['restriccio'] === "2" ? 'selected' : '' ?>>2</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="filter-serial" value="<?= htmlspecialchars($filters['serial']) ?>" placeholder="Filtrar Serial"></td>
+                    <td><input type="text" name="filter-model" value="<?= htmlspecialchars($filters['model']) ?>" placeholder="Filtrar Modelo"></td>
                 </tr>
             </tbody>
         </table>
