@@ -11,67 +11,49 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Obtener valores únicos de las columnas 'restriccion_equipo' y 'restriccion_usuario'
-$restriccion_equipo_sql = "SELECT DISTINCT restriccion_equipo FROM incidencias";
-$restriccion_equipo_result = $conn->query($restriccion_equipo_sql);
-$restriccion_equipo_options = [];
-if ($restriccion_equipo_result->num_rows > 0) {
-    while ($row = $restriccion_equipo_result->fetch_assoc()) {
-        $restriccion_equipo_options[] = $row['restriccion_equipo'];
-    }
-}
+// Filtros
+$filters = [
+    'incidencia' => isset($_GET['filter-incidencia']) ? $_GET['filter-incidencia'] : '',
+    'usuario' => isset($_GET['filter-usuario']) ? $_GET['filter-usuario'] : '',
+    'admins' => isset($_GET['filter-admins']) ? $_GET['filter-admins'] : '',
+    'equipo' => isset($_GET['filter-equipo']) ? $_GET['filter-equipo'] : '',
+    'clase' => isset($_GET['filter-clase']) ? $_GET['filter-clase'] : '',
+    'snap_installat' => isset($_GET['filter-snap_installat']) ? $_GET['filter-snap_installat'] : '',
+    'snap_vpns' => isset($_GET['filter-snap_vpns']) ? $_GET['filter-snap_vpns'] : '',
+    'snap_opera' => isset($_GET['filter-snap_opera']) ? $_GET['filter-snap_opera'] : '',
+    'windows' => isset($_GET['filter-windows']) ? $_GET['filter-windows'] : '',
+    'restriccion_equipo' => isset($_GET['filter-restriccion_equipo']) ? $_GET['filter-restriccion_equipo'] : '',
+    'restriccion_usuario' => isset($_GET['filter-restriccion_usuario']) ? $_GET['filter-restriccion_usuario'] : '',
+    'fecha' => isset($_GET['filter-fecha']) ? $_GET['filter-fecha'] : ''
+];
 
-$restriccion_usuario_sql = "SELECT DISTINCT restriccion_usuario FROM incidencias";
-$restriccion_usuario_result = $conn->query($restriccion_usuario_sql);
-$restriccion_usuario_options = [];
-if ($restriccion_usuario_result->num_rows > 0) {
-    while ($row = $restriccion_usuario_result->fetch_assoc()) {
-        $restriccion_usuario_options[] = $row['restriccion_usuario'];
-    }
-}
+// Mostrar solucionados
+$incluir_solucionados = isset($_GET['incluir_solucionados']) && $_GET['incluir_solucionados'] === '1';
 
 // Paginación
 $results_per_page = 20;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start_from = ($page - 1) * $results_per_page;
 
-// Filtros
-$filters = [
-    'incidencia' => isset($_GET['filter-incidencia']) ? $_GET['filter-incidencia'] : '',
-    'usuario' => isset($_GET['filter-usuario']) ? $_GET['filter-usuario'] : '',
-    'equipo' => isset($_GET['filter-equipo']) ? $_GET['filter-equipo'] : '',
-    'clase' => isset($_GET['filter-clase']) ? $_GET['filter-clase'] : '',
-    'restriccion_equipo' => isset($_GET['filter-restriccion_equipo']) ? $_GET['filter-restriccion_equipo'] : '',
-    'restriccion_usuario' => isset($_GET['filter-restriccion_usuario']) ? $_GET['filter-restriccion_usuario'] : '',
-    'fecha' => isset($_GET['filter-fecha']) ? $_GET['filter-fecha'] : ''
-];
+// Construir la consulta SQL con filtros
+$sql = "SELECT id, incidencia, usuario, admins, equipo, clase, snap_installat, snap_vpns, snap_opera, windows, restriccion_equipo, restriccion_usuario, fecha, estado FROM incidencias WHERE 1=1";
 
-// Filtros de fecha
-$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : '';
-$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : '';
-
-// Ordenación
-$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'fecha'; // Ordenar por fecha por defecto
-$order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc'; // Orden ascendente por defecto
-
-// Construir la consulta SQL con paginación, filtros y ordenación
-$sql = "SELECT id, incidencia, usuario, equipo, clase, restriccion_equipo, restriccion_usuario, fecha FROM incidencias WHERE 1=1";
-
+// Aplicar filtros
 foreach ($filters as $key => $value) {
-    if (isset($value) && $value !== '') {
+    if (!empty($value)) {
         $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
 
-if (!empty($fecha_inicio) && !empty($fecha_fin)) {
-    $fecha_fin_adjusted = date('Y-m-d', strtotime($fecha_fin . ' +1 day'));
-    $sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin_adjusted) . "'";
+// Filtrar por estado (pendiente por defecto)
+if (!$incluir_solucionados) {
+    $sql .= " AND estado = 0";
 }
 
-// Ordenar por fecha de más antigua a más nueva
-$sql .= " ORDER BY $order_by $order_dir LIMIT $start_from, $results_per_page";
+// Ordenar por fecha
+$sql .= " ORDER BY fecha ASC LIMIT $start_from, $results_per_page";
 
-// Ejecutar la consulta y verificar errores
+// Ejecutar la consulta
 $result = $conn->query($sql);
 if (!$result) {
     die("Error en la consulta: " . $conn->error);
@@ -81,14 +63,13 @@ if (!$result) {
 $total_sql = "SELECT COUNT(*) FROM incidencias WHERE 1=1";
 
 foreach ($filters as $key => $value) {
-    if (isset($value) && $value !== '') {
+    if (!empty($value)) {
         $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
 
-if (!empty($fecha_inicio) && !empty($fecha_fin)) {
-    $fecha_fin_adjusted = date('Y-m-d', strtotime($fecha_fin . ' +1 day'));
-    $total_sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin_adjusted) . "'";
+if (!$incluir_solucionados) {
+    $total_sql .= " AND estado = 0";
 }
 
 $total_result = $conn->query($total_sql);
@@ -199,6 +180,15 @@ $total_pages = ceil($total_rows / $results_per_page);
             }
             return false;
         }
+        function toggleSolucionados() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('incluir_solucionados') === '1') {
+                urlParams.delete('incluir_solucionados');
+            } else {
+                urlParams.set('incluir_solucionados', '1');
+            }
+            window.location.search = urlParams.toString();
+        }
     </script>
 </head>
 <body>
@@ -208,95 +198,119 @@ $total_pages = ceil($total_rows / $results_per_page);
     </h1>
     <h2>Filtrar Resultados</h2>
     <form method="GET" action="incidencias.php">
-        <table id="filter-table">
-            <thead>
-                <tr>
-                    <th>Incidencia</th>
-                    <th>Usuario</th>
-                    <th>Equipo</th>
-                    <th>Clase</th>
-                    <th>Restricción Equipo</th>
-                    <th>Restricción Usuario</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="filter-incidencia" placeholder="Incidencia" value="<?php echo htmlspecialchars($filters['incidencia']); ?>"></td>
-                    <td><input type="text" name="filter-usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($filters['usuario']); ?>"></td>
-                    <td><input type="text" name="filter-equipo" placeholder="Equipo" value="<?php echo htmlspecialchars($filters['equipo']); ?>"></td>
-                    <td><input type="text" name="filter-clase" placeholder="Clase" value="<?php echo htmlspecialchars($filters['clase']); ?>"></td>
-                    <td>
-                        <select name="filter-restriccion_equipo">
-                            <option value="">Seleccionar Restricción Equipo</option>
-                            <?php foreach ($restriccion_equipo_options as $option): ?>
-                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_equipo'] == $option ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($option); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                    <td>
-                        <select name="filter-restriccion_usuario">
-                            <option value="">Seleccionar Restricción Usuario</option>
-                            <?php foreach ($restriccion_usuario_options as $option): ?>
-                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_usuario'] == $option ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($option); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                    <td><input type="text" name="filter-fecha" placeholder="Fecha" value="<?php echo htmlspecialchars($filters['fecha']); ?>"></td>
-                </tr>
-            </tbody>
-        </table>
+    <table id="filter-table">
+        <thead>
+            <tr>
+                <th>Incidencia</th>
+                <th>Usuario</th>
+                <th>Administradores</th>
+                <th>Equipo</th>
+                <th>Clase</th>
+                <th>Snap Instalado</th>
+                <th>Snap VPN</th>
+                <th>Snap Opera</th>
+                <th>Windows</th>
+                <th>Restricción Equipo</th>
+                <th>Restricción Usuario</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" name="filter-incidencia" placeholder="Incidencia" value="<?php echo htmlspecialchars($filters['incidencia']); ?>"></td>
+                <td><input type="text" name="filter-usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($filters['usuario']); ?>"></td>
+                <td><input type="text" name="filter-admins" placeholder="Administradores" value="<?php echo htmlspecialchars($filters['admins']); ?>"></td>
+                <td><input type="text" name="filter-equipo" placeholder="Equipo" value="<?php echo htmlspecialchars($filters['equipo']); ?>"></td>
+                <td><input type="text" name="filter-clase" placeholder="Clase" value="<?php echo htmlspecialchars($filters['clase']); ?>"></td>
+                <td><input type="text" name="filter-snap_installat" placeholder="Snap Instalado" value="<?php echo htmlspecialchars($filters['snap_installat']); ?>"></td>
+                <td><input type="text" name="filter-snap_vpns" placeholder="Snap VPN" value="<?php echo htmlspecialchars($filters['snap_vpns']); ?>"></td>
+                <td><input type="text" name="filter-snap_opera" placeholder="Snap Opera" value="<?php echo htmlspecialchars($filters['snap_opera']); ?>"></td>
+                <td><input type="text" name="filter-windows" placeholder="Windows" value="<?php echo htmlspecialchars($filters['windows']); ?>"></td>
+                <td>
+                    <select name="filter-restriccion_equipo">
+                        <option value="">Seleccionar Restricción Equipo</option>
+                        <?php foreach ($restriccion_equipo_options as $option): ?>
+                            <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_equipo'] == $option ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <td>
+                    <select name="filter-restriccion_usuario">
+                        <option value="">Seleccionar Restricción Usuario</option>
+                        <?php foreach ($restriccion_usuario_options as $option): ?>
+                            <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_usuario'] == $option ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <td><input type="text" name="filter-fecha" placeholder="Fecha" value="<?php echo htmlspecialchars($filters['fecha']); ?>"></td>
+            </tr>
+        </tbody>
+    </table>
         <h3>Filtrar por Rango de Fechas</h3>
         <label for="fecha_inicio">Desde:</label>
         <input type="date" name="fecha_inicio" id="fecha_inicio" value="<?php echo htmlspecialchars($fecha_inicio); ?>">
         <label for="fecha_fin">Hasta:</label>
         <input type="date" name="fecha_fin" id="fecha_fin" value="<?php echo htmlspecialchars($fecha_fin); ?>">
+        <button type="button" onclick="toggleSolucionados()">
+            <?= $incluir_solucionados ? 'Excluir solucionados' : 'Incluir solucionados' ?>
+        </button>
         <button type="submit">Filtrar</button>
         <button type="button" onclick="window.location.href='incidencias.php'">Limpiar filtros</button>
     </form>
     <table id="data-table">
-        <thead>
-            <tr>
-                <th>Incidencia</th>
-                <th>Usuario</th>
-                <th>Equipo</th>
-                <th>Clase</th>
-                <th>Restricción Equipo</th>
-                <th>Restricción Usuario</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row['incidencia']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['usuario']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['equipo']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['clase']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['restriccion_equipo']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['restriccion_usuario']) . "</td>";
-                    echo "<td>" . htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha']))) . "</td>";
-                    echo "<td>
-                            <form method='POST' action='borrar_incidencia.php' style='display:inline;' onsubmit='return confirmarBorrado(this);'>
-                                <input type='hidden' name='id' value='" . htmlspecialchars($row['id']) . "'>
-                                <button type='submit'>Borrar incidencia</button>
-                            </form>
-                          </td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='8'>No hay datos disponibles</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
+            <thead>
+                <tr>
+                    <th>Incidencia</th>
+                    <th>Usuario</th>
+                    <th>Administradores</th>
+                    <th>Equipo</th>
+                    <th>Clase</th>
+                    <th>Snap Instalado</th>
+                    <th>Snap VPN</th>
+                    <th>Snap Opera</th>
+                    <th>Windows</th>
+                    <th>Restricción Equipo</th>
+                    <th>Restricción Usuario</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($result->num_rows > 0): ?>
+                    <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['incidencia']) ?></td>
+                            <td><?= htmlspecialchars($row['usuario']) ?></td>
+                            <td><?= htmlspecialchars($row['admins']) ?></td>
+                            <td><?= htmlspecialchars($row['equipo']) ?></td>
+                            <td><?= htmlspecialchars($row['clase']) ?></td>
+                            <td><?= htmlspecialchars($row['snap_installat']) ?></td>
+                            <td><?= htmlspecialchars($row['snap_vpns']) ?></td>
+                            <td><?= htmlspecialchars($row['snap_opera']) ?></td>
+                            <td><?= htmlspecialchars($row['windows']) ?></td>
+                            <td><?= htmlspecialchars($row['restriccion_equipo']) ?></td>
+                            <td><?= htmlspecialchars($row['restriccion_usuario']) ?></td>
+                            <td><?= htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha']))) ?></td>
+                            <td>
+                                <?= $row['estado'] == 0 ? 'Pendiente' : 'Solucionado' ?>
+                                <?php if ($row['estado'] == 0): ?>
+                                    <form method="POST" action="solucionar_incidencia.php" style="display:inline;">
+                                        <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
+                                        <button type="submit">Solucionar</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr><td colspan="13">No hay datos disponibles</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     <div class="pagination">
         <?php
         for ($i = 1; $i <= $total_pages; $i++) {
