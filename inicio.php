@@ -11,8 +11,8 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Consulta para contar las filas de la tabla "incidencias"
-$sql = "SELECT COUNT(*) AS total FROM incidencias";
+// Consulta para contar las filas de la tabla "incidencias" con estado = 0
+$sql = "SELECT COUNT(*) AS total FROM incidencias WHERE estado = 0";
 $result = $conn->query($sql);
 
 $alert_message = "No hay alertas pendientes";
@@ -21,7 +21,7 @@ $alert_class = "alerta-sin-alertas";
 if ($result && $row = $result->fetch_assoc()) {
     $total_incidencias = $row['total'];
     if ($total_incidencias > 0) {
-        $alert_message = "ALERTA: Hay un total de $total_incidencias incidencias";
+        $alert_message = "ALERTA: Hay un total de $total_incidencias incidencias pendientes";
         $alert_class = "alerta-con-alertas";
     }
 }

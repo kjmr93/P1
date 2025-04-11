@@ -11,6 +11,16 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
+// Obtener valores únicos para el filtro de clase desde la tabla antenas columna aula
+$clase_options = [];
+$clase_sql = "SELECT DISTINCT aula FROM antenas ORDER BY aula ASC"; // Ordenar alfabéticamente
+$clase_result = $conn->query($clase_sql);
+if ($clase_result->num_rows > 0) {
+    while ($row = $clase_result->fetch_assoc()) {
+        $clase_options[] = $row['aula'];
+    }
+}
+
 // Filtros
 $filters = [
     'incidencia' => isset($_GET['filter-incidencia']) ? $_GET['filter-incidencia'] : '',
@@ -40,9 +50,16 @@ $sql = "SELECT id, incidencia, usuario, admins, equipo, clase, snap_installat, s
 
 // Aplicar filtros
 foreach ($filters as $key => $value) {
-    if (!empty($value)) {
+    if ($value !== '') { // Detectar correctamente valores como 0
         $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
+}
+
+// Filtrar por rango de fechas
+$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : '';
+$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : '';
+if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+    $sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . " 00:00:00' AND '" . $conn->real_escape_string($fecha_fin) . " 23:59:59'";
 }
 
 // Filtrar por estado (pendiente por defecto)
@@ -66,6 +83,10 @@ foreach ($filters as $key => $value) {
     if (!empty($value)) {
         $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
+}
+
+if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+    $total_sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin) . "'";
 }
 
 if (!$incluir_solucionados) {
@@ -171,10 +192,28 @@ $total_pages = ceil($total_rows / $results_per_page);
             color: white;
             border: 1px solid white;
         }
+        #data-table th:nth-child(1),
+        #data-table td:nth-child(1) {
+            width: 400px;
+        }
+        #data-table th:nth-child(10),
+        #data-table td:nth-child(10),
+        #data-table th:nth-child(11),
+        #data-table td:nth-child(11) {
+            width: 120px;
+        }
+        #data-table th:nth-child(12),
+        #data-table td:nth-child(12) {
+            width: 350px;
+            white-space: pre-line;
+        }       
+        #data-table td form button {
+            margin-top: 5px;
+        }
     </style>
     <script>
-        function confirmarBorrado(form) {
-            const confirmacion = confirm("¿Estás seguro de que deseas borrar esta incidencia?");
+        function confirmarSolucion(form) {
+            const confirmacion = confirm("¿Estás seguro de que deseas marcar como solucionada esta incidencia?");
             if (confirmacion) {
                 form.submit();
             }
@@ -221,7 +260,16 @@ $total_pages = ceil($total_rows / $results_per_page);
                 <td><input type="text" name="filter-usuario" placeholder="Usuario" value="<?php echo htmlspecialchars($filters['usuario']); ?>"></td>
                 <td><input type="text" name="filter-admins" placeholder="Administradores" value="<?php echo htmlspecialchars($filters['admins']); ?>"></td>
                 <td><input type="text" name="filter-equipo" placeholder="Equipo" value="<?php echo htmlspecialchars($filters['equipo']); ?>"></td>
-                <td><input type="text" name="filter-clase" placeholder="Clase" value="<?php echo htmlspecialchars($filters['clase']); ?>"></td>
+                <td>
+                    <select name="filter-clase">
+                        <option value="">Seleccionar Clase</option>
+                        <?php foreach ($clase_options as $option): ?>
+                            <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['clase'] == $option ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($option); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
                 <td><input type="text" name="filter-snap_installat" placeholder="Snap Instalado" value="<?php echo htmlspecialchars($filters['snap_installat']); ?>"></td>
                 <td><input type="text" name="filter-snap_vpns" placeholder="Snap VPN" value="<?php echo htmlspecialchars($filters['snap_vpns']); ?>"></td>
                 <td><input type="text" name="filter-snap_opera" placeholder="Snap Opera" value="<?php echo htmlspecialchars($filters['snap_opera']); ?>"></td>
@@ -229,21 +277,17 @@ $total_pages = ceil($total_rows / $results_per_page);
                 <td>
                     <select name="filter-restriccion_equipo">
                         <option value="">Seleccionar Restricción Equipo</option>
-                        <?php foreach ($restriccion_equipo_options as $option): ?>
-                            <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_equipo'] == $option ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($option); ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="0" <?php echo $filters['restriccion_equipo'] === "0" ? 'selected' : ''; ?>>0</option>
+                        <option value="1" <?php echo $filters['restriccion_equipo'] === "1" ? 'selected' : ''; ?>>1</option>
+                        <option value="2" <?php echo $filters['restriccion_equipo'] === "2" ? 'selected' : ''; ?>>2</option>
                     </select>
                 </td>
                 <td>
                     <select name="filter-restriccion_usuario">
                         <option value="">Seleccionar Restricción Usuario</option>
-                        <?php foreach ($restriccion_usuario_options as $option): ?>
-                            <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['restriccion_usuario'] == $option ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($option); ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <option value="0" <?php echo $filters['restriccion_usuario'] === "0" ? 'selected' : ''; ?>>0</option>
+                        <option value="1" <?php echo $filters['restriccion_usuario'] === "1" ? 'selected' : ''; ?>>1</option>
+                        <option value="2" <?php echo $filters['restriccion_usuario'] === "2" ? 'selected' : ''; ?>>2</option>
                     </select>
                 </td>
                 <td><input type="text" name="filter-fecha" placeholder="Fecha" value="<?php echo htmlspecialchars($filters['fecha']); ?>"></td>
@@ -298,7 +342,8 @@ $total_pages = ceil($total_rows / $results_per_page);
                             <td>
                                 <?= $row['estado'] == 0 ? 'Pendiente' : 'Solucionado' ?>
                                 <?php if ($row['estado'] == 0): ?>
-                                    <form method="POST" action="solucionar_incidencia.php" style="display:inline;">
+                                    <br>
+                                    <form method="POST" action="solucionar_incidencia.php" style="display:inline;" onsubmit="return confirmarSolucion(this);">
                                         <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
                                         <button type="submit">Solucionar</button>
                                     </form>
