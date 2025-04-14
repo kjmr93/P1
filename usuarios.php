@@ -241,7 +241,14 @@ $total_pages = ceil($total_rows / $results_per_page);
         Datos de Usuarios
     </h1>
 
-    <h2>Filtrar Resultados</h2>
+    <h2>Filtrar Resultados</h2><br>
+        <form method="POST" action="importar_usuarios.php" enctype="multipart/form-data" style="margin-bottom: 20px;">
+        <label for="archivo-usuarios" style="font-weight: bold;">Importar usuarios:</label>
+        <input type="file" name="archivo_usuarios" id="archivo-usuarios" accept=".xls" required>
+        <button type="submit" style="background-color: #4a90e2; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+            Subir archivo
+        </button>
+    </form>
     <form method="GET" action="usuarios.php">
         <table id="filter-table">
             <thead>
