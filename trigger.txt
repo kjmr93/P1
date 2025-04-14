@@ -1,0 +1,136 @@
+BEGIN
+    DECLARE aula_value VARCHAR(255);
+
+    SELECT aula INTO aula_value
+    FROM antenas
+    WHERE mac = NEW.macssid
+    LIMIT 1;
+
+    -- Incidencia tipo 1
+    IF NEW.admins != 'administrador' THEN
+        INSERT INTO incidencias (
+            incidencia, 
+            usuario, 
+            equipo, 
+            clase, 
+            restriccion_equipo, 
+            restriccion_usuario, 
+            fecha, 
+            admins, 
+            snap_installat, 
+            snap_vpns, 
+            snap_opera, 
+            windows
+        )
+        VALUES (
+            'Incidencia tipo 1: admins distinto de administrador', 
+            NEW.nomusuari, 
+            NEW.mac, 
+            aula_value, 
+            NEW.restriccio, 
+            NEW.restriccio_usuari, 
+            NOW(), 
+            NEW.admins, 
+            NEW.snap_installat, 
+            NEW.snap_vpns, 
+            NEW.snap_opera, 
+            NEW.windows
+        );
+    END IF;
+
+    -- Incidencia tipo 2
+    IF NEW.restriccio != NEW.restriccio_usuari THEN
+        INSERT INTO incidencias (
+            incidencia, 
+            usuario, 
+            equipo, 
+            clase, 
+            restriccion_equipo, 
+            restriccion_usuario, 
+            fecha, 
+            admins, 
+            snap_installat, 
+            snap_vpns, 
+            snap_opera, 
+            windows
+        )
+        VALUES (
+            'Incidencia tipo 2: restricción de equipo distinto de restricción de usuario', 
+            NEW.nomusuari, 
+            NEW.mac, 
+            aula_value, 
+            NEW.restriccio, 
+            NEW.restriccio_usuari, 
+            NOW(), 
+            NEW.admins, 
+            NEW.snap_installat, 
+            NEW.snap_vpns, 
+            NEW.snap_opera, 
+            NEW.windows
+        );
+    END IF;
+
+    -- Incidencia tipo 3
+    IF NEW.snap_vpns != '' OR NEW.snap_opera != '' OR NEW.windows != '' THEN
+        INSERT INTO incidencias (
+            incidencia, 
+            usuario, 
+            equipo, 
+            clase, 
+            restriccion_equipo, 
+            restriccion_usuario, 
+            fecha, 
+            admins, 
+            snap_installat, 
+            snap_vpns, 
+            snap_opera, 
+            windows
+        )
+        VALUES (
+            'Incidencia tipo 3: snap_vpns, snap_opera o windows no están vacíos', 
+            NEW.nomusuari, 
+            NEW.mac, 
+            aula_value, 
+            NEW.restriccio, 
+            NEW.restriccio_usuari, 
+            NOW(), 
+            NEW.admins, 
+            NEW.snap_installat, 
+            NEW.snap_vpns, 
+            NEW.snap_opera, 
+            NEW.windows
+        );
+    END IF;
+
+    -- Incidencia tipo 4
+    IF NEW.snap_installat != 'snap1' OR NEW.snap_installat = '' THEN
+        INSERT INTO incidencias (
+            incidencia, 
+            usuario, 
+            equipo, 
+            clase, 
+            restriccion_equipo, 
+            restriccion_usuario, 
+            fecha, 
+            admins, 
+            snap_installat, 
+            snap_vpns, 
+            snap_opera, 
+            windows
+        )
+        VALUES (
+            'Incidencia tipo 4: snap_installat distinto de snap1 o vacío', 
+            NEW.nomusuari, 
+            NEW.mac, 
+            aula_value, 
+            NEW.restriccio, 
+            NEW.restriccio_usuari, 
+            NOW(), 
+            NEW.admins, 
+            NEW.snap_installat, 
+            NEW.snap_vpns, 
+            NEW.snap_opera, 
+            NEW.windows
+        );
+    END IF;
+END

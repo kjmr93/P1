@@ -56,25 +56,14 @@ if ($result_cursos) {
     }
 }
 
-// Obtener valores únicos de "Restricción del Equipo"
-$result_restriccion_equipos = $conn->query("SELECT DISTINCT restriccio FROM historial WHERE restriccio IS NOT NULL");
-if ($result_restriccion_equipos) {
-    while ($row = $result_restriccion_equipos->fetch_assoc()) {
-        $restriccion_equipos[] = $row['restriccio'];
-    }
-}
+// Modificar los valores únicos de "Restricción del Equipo" y "Restricción del Usuario"
+$restriccion_equipos = [0, 1, 2];
+$restriccion_usuarios = [0, 1, 2];
 
-// Obtener valores únicos de "Restricción del Usuario"
-$result_restriccion_usuarios = $conn->query("SELECT DISTINCT restriccio FROM usuaris WHERE restriccio IS NOT NULL");
-if ($result_restriccion_usuarios) {
-    while ($row = $result_restriccion_usuarios->fetch_assoc()) {
-        $restriccion_usuarios[] = $row['restriccio'];
-    }
-}
-
-// Obtener valores únicos de "Clase de la Antena"
-$result_clases_antena = $conn->query("SELECT DISTINCT aula FROM antenas WHERE aula IS NOT NULL AND aula != ''");
+// Ordenar alfabéticamente los valores únicos de "Clase de la Antena"
+$result_clases_antena = $conn->query("SELECT DISTINCT aula FROM antenas WHERE aula IS NOT NULL AND aula != '' ORDER BY aula ASC");
 if ($result_clases_antena) {
+    $clases_antena = [];
     while ($row = $result_clases_antena->fetch_assoc()) {
         $clases_antena[] = $row['aula'];
     }
@@ -100,7 +89,7 @@ if ($form_submitted) {
             u.cognoms,
             u.curs,
             h.restriccio AS restriccio_equipo,
-            u.restriccio AS restriccio_usuario,
+            h.restriccio_usuari AS restriccio_usuario,
             UPPER(a.aula) AS clase_antena,
             h.fecha_conexion
         FROM historial h
@@ -111,13 +100,13 @@ if ($form_submitted) {
 
     // Aplicar filtros
     foreach ($filters as $key => $value) {
-        if (!empty($value)) {
+        if ($value !== '' && $value !== null) { // Asegurarse de que "0" sea considerado válido
             if ($key === 'fecha_conexion') {
                 $sql .= " AND h.fecha_conexion LIKE '%" . $conn->real_escape_string($value) . "%'";
             } elseif ($key === 'restriccio_equipo') {
-                $sql .= " AND h.restriccio = " . (int)$value;
+                $sql .= " AND h.restriccio = " . (int)$value; // Filtrar por restriccio de equipo
             } elseif ($key === 'restriccio_usuario') {
-                $sql .= " AND u.restriccio = " . (int)$value;
+                $sql .= " AND h.restriccio_usuari = " . (int)$value; // Corregido: usar restriccio_usuari de historial
             } elseif ($key === 'aula') {
                 $sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
             } else {
