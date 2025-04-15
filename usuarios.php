@@ -244,6 +244,10 @@ $total_pages = ceil($total_rows / $results_per_page);
         td {
             vertical-align: middle;
         }
+        #toggle-opciones {
+            margin-bottom: 20px;
+            margin-left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -253,13 +257,37 @@ $total_pages = ceil($total_rows / $results_per_page);
     </h1>
 
     <h2>Filtrar Resultados</h2><br>
+    <button id="toggle-opciones">
+        Opciones
+    </button>
+
+    <div id="opciones" style="display: none; margin-bottom: 20px;">
         <form method="POST" action="importar_usuarios.php" enctype="multipart/form-data" style="margin-bottom: 20px;">
-        <label for="archivo-usuarios" style="font-weight: bold;">Importar usuarios:</label>
-        <input type="file" name="archivo_usuarios" id="archivo-usuarios" accept=".xls" required>
-        <button type="submit" style="background-color: #4a90e2; color: white; padding: 10px 20px; border: none; cursor: pointer;">
-            Subir archivo
-        </button>
-    </form>
+            <label for="archivo-usuarios" style="font-weight: bold;">Importar usuarios:</label>
+            <input type="file" name="archivo_usuarios" id="archivo-usuarios" accept=".xls" required>
+            <button type="submit" style="background-color: #4a90e2; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Subir archivo
+            </button>
+        </form>
+        <form method="POST" action="actualizar_usuarios.php" enctype="multipart/form-data" style="margin-bottom: 20px;">
+            <label for="archivo-actualizar" style="font-weight: bold;">Actualizar usuarios:</label>
+            <input type="file" name="archivo_usuarios" id="archivo-actualizar" accept=".xls" required>
+            <button type="submit" style="background-color: #4a90e2; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Actualizar archivo
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('toggle-opciones').addEventListener('click', function () {
+            const opcionesDiv = document.getElementById('opciones');
+            if (opcionesDiv.style.display === 'none') {
+                opcionesDiv.style.display = 'block';
+            } else {
+                opcionesDiv.style.display = 'none';
+            }
+        });
+    </script>
     <form method="GET" action="usuarios.php">
         <table id="filter-table">
             <thead>
