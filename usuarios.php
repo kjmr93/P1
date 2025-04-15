@@ -12,12 +12,22 @@ if ($conn->connect_error) {
 }
 
 // Obtener valores únicos de la columna 'curs'
-$curs_sql = "SELECT DISTINCT curs FROM usuaris";
+$curs_sql = "SELECT DISTINCT curs FROM usuaris ORDER BY curs ASC";
 $curs_result = $conn->query($curs_sql);
 $curs_options = [];
 if ($curs_result->num_rows > 0) {
     while ($row = $curs_result->fetch_assoc()) {
         $curs_options[] = $row['curs'];
+    }
+}
+
+// Obtener valores únicos de la columna 'clase'
+$clase_sql = "SELECT DISTINCT clase FROM usuaris ORDER BY clase ASC";
+$clase_result = $conn->query($clase_sql);
+$clase_options = [];
+if ($clase_result->num_rows > 0) {
+    while ($row = $clase_result->fetch_assoc()) {
+        $clase_options[] = $row['clase'];
     }
 }
 
@@ -41,7 +51,9 @@ $filters = [
     'nomusuari' => isset($_GET['filter-nomusuari']) ? $_GET['filter-nomusuari'] : '',
     'nom' => isset($_GET['filter-nom']) ? $_GET['filter-nom'] : '',
     'cognoms' => isset($_GET['filter-cognoms']) ? $_GET['filter-cognoms'] : '',
+    'cognoms2' => isset($_GET['filter-cognoms2']) ? $_GET['filter-cognoms2'] : '',
     'curs' => isset($_GET['filter-curs']) ? $_GET['filter-curs'] : '',
+    'clase' => isset($_GET['filter-clase']) ? $_GET['filter-clase'] : '',
     'restriccio' => isset($_GET['filter-restriccio']) ? $_GET['filter-restriccio'] : ''
 ];
 
@@ -145,9 +157,9 @@ $total_pages = ceil($total_rows / $results_per_page);
             background-color: #ddd;
         }
         .pagination {
-            text-align: center; /* Centrar el contenido */
-            margin: 20px auto; /* Espaciado superior e inferior */
-            padding: 10px 0; /* Mismo padding arriba y abajo */
+            text-align: center;
+            margin: 20px auto;
+            padding: 10px 0;
         }
         .pagination a {
             color: #4a90e2;
@@ -211,27 +223,26 @@ $total_pages = ceil($total_rows / $results_per_page);
             color: white;
             border: 1px solid white;
         }
-        /* Estilo para el desplegable y botón en la misma línea */
         .restriccion-form {
             display: flex;
             align-items: center;
             gap: 5px;
-            margin: 0; /* Eliminar márgenes */
-            padding: 0; /* Eliminar relleno */
+            margin: 0;
+            padding: 0;
         }
         .restriccion-form select {
             width: auto;
-            padding: 2px 5px; /* Reducir relleno */
-            font-size: 14px; /* Ajustar tamaño de fuente */
-            height: auto; /* Ajustar altura */
+            padding: 2px 5px;
+            font-size: 14px;
+            height: auto;
         }
         .restriccion-form button {
-            padding: 2px 8px; /* Reducir relleno */
-            font-size: 14px; /* Ajustar tamaño de fuente */
-            height: auto; /* Ajustar altura */
+            padding: 2px 8px;
+            font-size: 14px;
+            height: auto;
         }
         td {
-            vertical-align: middle; /* Alinear contenido verticalmente */
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -255,8 +266,10 @@ $total_pages = ceil($total_rows / $results_per_page);
                 <tr>
                     <th>Nombre de Usuario</th>
                     <th>Nombre</th>
-                    <th>Apellidos</th>
+                    <th>Apellido 1</th>
+                    <th>Apellido 2</th>
                     <th>Curso</th>
+                    <th>Clase</th>
                     <th>Restricción</th>
                 </tr>
             </thead>
@@ -265,11 +278,22 @@ $total_pages = ceil($total_rows / $results_per_page);
                     <td><input type="text" name="filter-nomusuari" placeholder="Filtrar Nombre de Usuario" value="<?php echo htmlspecialchars($filters['nomusuari']); ?>"></td>
                     <td><input type="text" name="filter-nom" placeholder="Filtrar Nombre" value="<?php echo htmlspecialchars($filters['nom']); ?>"></td>
                     <td><input type="text" name="filter-cognoms" placeholder="Filtrar Apellidos" value="<?php echo htmlspecialchars($filters['cognoms']); ?>"></td>
+                    <td><input type="text" name="filter-cognoms2" placeholder="Filtrar Apellidos" value="<?php echo htmlspecialchars($filters['cognoms2']); ?>"></td>
                     <td>
                         <select name="filter-curs">
                             <option value="">Filtrar Curso</option>
                             <?php foreach ($curs_options as $option): ?>
                                 <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['curs'] == $option ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($option); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="filter-clase">
+                            <option value="">Filtrar Clase</option>
+                            <?php foreach ($clase_options as $option): ?>
+                                <option value="<?php echo htmlspecialchars($option); ?>" <?php echo $filters['clase'] == $option ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($option); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -303,13 +327,21 @@ $total_pages = ceil($total_rows / $results_per_page);
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                 </th>
-                <th>Apellidos<br>
+                <th>Apellido 1<br>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Apellido 2<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms2', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms2', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                 </th>
                 <th>Curso<br>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                </th>
+                <th>Clase<br>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                    <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                 </th>
                 <th>Restricción<br>
                     <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
@@ -326,7 +358,9 @@ $total_pages = ceil($total_rows / $results_per_page);
                     echo "<td>" . htmlspecialchars($row['nomusuari']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['nom']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['cognoms']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['cognoms2']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['curs']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['clase']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['restriccio']) . "</td>";
                     echo "<td>
                             <form method='POST' action='modificar_restriccion.php' class='restriccion-form'>
