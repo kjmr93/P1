@@ -111,12 +111,12 @@ $conn->close();
     <div class="botones-container">
         <button class="boton" onclick="window.location.href='historial.php'">Historial de Conexiones</button>
         <button class="boton" onclick="window.location.href='incidencias.php'">Historial de Incidencias</button>
+        <button class="boton" onclick="window.location.href='historial2.php'">Borrar Conexiones</button>
+        <button class="boton" onclick="window.location.href='incidencias2.php'">Borrar Incidencias</button>
         <button class="boton" onclick="window.location.href='equipos.php'">Datos de Equipos</button>
         <button class="boton" onclick="window.location.href='usuarios.php'">Datos de Usuarios</button>
         <button class="boton" onclick="window.location.href='antenas.php'">Datos de Antenas</button>
         <button class="boton" onclick="window.location.href='ultimas_conexiones.php'">Últimas Conexiones</button>
-        <button class="boton" onclick="window.location.href='funcionalidad7.php'">Botón 7</button>
-        <button class="boton" onclick="window.location.href='funcionalidad8.php'">Botón 8</button>
         <button class="boton" onclick="window.location.href='exportar_bdd.php'">Exportar BDD</button>
         <button class="boton" onclick="document.getElementById('importar-form').classList.toggle('hidden')">Importar BDD</button>
     </div>
