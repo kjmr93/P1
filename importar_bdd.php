@@ -14,7 +14,7 @@ if (isset($_FILES['sql_file']) && $_FILES['sql_file']['error'] === UPLOAD_ERR_OK
     $mysql_path = "/usr/bin/mysql"; // Cambia esta ruta si es necesario
 
     // Comando para importar la base de datos
-    $command = "$mysql_path -u $username -p$password $dbname < $file_tmp";
+    $command = "$mysql_path -u $username -p'$password' $dbname < $file_tmp";
 
     // Ejecutar el comando
     exec($command . " 2>&1", $output, $return_var);
@@ -24,8 +24,9 @@ if (isset($_FILES['sql_file']) && $_FILES['sql_file']['error'] === UPLOAD_ERR_OK
         header("Location: inicio.php?status=success&message=Base%20de%20datos%20importada%20correctamente");
         exit();
     } else {
-        // Redirigir a inicio.php con mensaje de error
-        header("Location: inicio.php?status=error&message=Error%20al%20importar%20la%20base%20de%20datos");
+        // Mostrar el error para depuración
+        echo "Error al importar la base de datos:<br>";
+        echo implode("<br>", $output);
         exit();
     }
 } else {
