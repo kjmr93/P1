@@ -23,9 +23,14 @@ if ($dias > 0) {
     $fecha_limite = date('Y-m-d H:i:s', strtotime("-$dias days"));
 
     $sql = "
-        SELECT historial.nomusuari, MAX(historial.fecha_conexion) AS ultima_conexion, historial.restriccio, historial.restriccio_usuari
-        FROM historial
-        WHERE historial.fecha_conexion < ?
+        SELECT subquery.nomusuari, subquery.ultima_conexion, historial.restriccio, historial.restriccio_usuari
+        FROM (
+            SELECT nomusuari, MAX(fecha_conexion) AS ultima_conexion
+            FROM historial
+            GROUP BY nomusuari
+        ) AS subquery
+        INNER JOIN historial ON subquery.nomusuari = historial.nomusuari AND subquery.ultima_conexion = historial.fecha_conexion
+        WHERE subquery.ultima_conexion < ?
     ";
 
     // Agregar filtro por Fecha de Restauración
@@ -43,7 +48,7 @@ if ($dias > 0) {
         $sql .= " AND historial.restriccio_usuari = ?";
     }
 
-    $sql .= " GROUP BY historial.nomusuari ORDER BY ultima_conexion DESC";
+    $sql .= " ORDER BY subquery.ultima_conexion DESC";
 
     // Preparar la consulta
     $stmt = $conn->prepare($sql);

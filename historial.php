@@ -17,6 +17,7 @@ $filters = [
     'nomusuari' => '',
     'nom' => '',
     'cognoms' => '',
+    'cognoms2' => '',
     'curs' => '',
     'restriccio_equipo' => '',
     'restriccio_usuario' => '',
@@ -34,6 +35,7 @@ if ($form_submitted) {
         'nomusuari' => isset($_GET['filter-nomusuari']) ? $_GET['filter-nomusuari'] : '',
         'nom' => isset($_GET['filter-nom']) ? $_GET['filter-nom'] : '',
         'cognoms' => isset($_GET['filter-cognoms']) ? $_GET['filter-cognoms'] : '',
+        'cognoms2' => isset($_GET['filter-cognoms2']) ? $_GET['filter-cognoms2'] : '',
         'curs' => isset($_GET['filter-curs']) ? $_GET['filter-curs'] : '',
         'restriccio_equipo' => isset($_GET['filter-restriccio_equipo']) ? $_GET['filter-restriccio_equipo'] : '',
         'restriccio_usuario' => isset($_GET['filter-restriccio_usuario']) ? $_GET['filter-restriccio_usuario'] : '',
@@ -87,6 +89,7 @@ if ($form_submitted) {
             h.nomusuari,
             u.nom,
             u.cognoms,
+            u.cognoms2,
             u.curs,
             h.restriccio AS restriccio_equipo,
             h.restriccio_usuari AS restriccio_usuario,
@@ -106,9 +109,21 @@ if ($form_submitted) {
             } elseif ($key === 'restriccio_equipo') {
                 $sql .= " AND h.restriccio = " . (int)$value; // Filtrar por restriccio de equipo
             } elseif ($key === 'restriccio_usuario') {
-                $sql .= " AND h.restriccio_usuari = " . (int)$value; // Corregido: usar restriccio_usuari de historial
+                $sql .= " AND h.restriccio_usuari = " . (int)$value; // Filtrar por restriccio_usuario
             } elseif ($key === 'aula') {
                 $sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } elseif ($key === 'mac') {
+                $sql .= " AND h.mac LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar h.mac
+            } elseif ($key === 'nomusuari') {
+                $sql .= " AND h.nomusuari LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar h.nomusuari
+            } elseif ($key === 'nom') {
+                $sql .= " AND u.nom LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.nom
+            } elseif ($key === 'cognoms') {
+                $sql .= " AND u.cognoms LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms
+            } elseif ($key === 'cognoms2') {
+                $sql .= " AND u.cognoms2 LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms2
+            } elseif ($key === 'curs') {
+                $sql .= " AND u.curs LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.curs
             } else {
                 $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
             }
@@ -142,9 +157,21 @@ if ($form_submitted) {
             } elseif ($key === 'restriccio_equipo') {
                 $total_sql .= " AND h.restriccio = " . (int)$value;
             } elseif ($key === 'restriccio_usuario') {
-                $total_sql .= " AND u.restriccio = " . (int)$value;
+                $total_sql .= " AND h.restriccio_usuari = " . (int)$value; // Especificar h.restriccio_usuari
             } elseif ($key === 'aula') {
                 $total_sql .= " AND UPPER(a.aula) LIKE '%" . $conn->real_escape_string($value) . "%'";
+            } elseif ($key === 'mac') {
+                $total_sql .= " AND h.mac LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar h.mac
+            } elseif ($key === 'nomusuari') {
+                $total_sql .= " AND h.nomusuari LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar h.nomusuari
+            } elseif ($key === 'nom') {
+                $total_sql .= " AND u.nom LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.nom
+            } elseif ($key === 'cognoms') {
+                $total_sql .= " AND u.cognoms LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms
+            } elseif ($key === 'cognoms2') {
+                $total_sql .= " AND u.cognoms2 LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms
+            } elseif ($key === 'curs') {
+                $total_sql .= " AND u.curs LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.curs
             } else {
                 $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
             }
@@ -282,7 +309,8 @@ if ($form_submitted) {
                     <th>MAC</th>
                     <th>Nombre de Usuario</th>
                     <th>Nombre</th>
-                    <th>Apellidos</th>
+                    <th>Apellido 1</th>
+                    <th>Apellido 2</th>
                     <th>Curso</th>
                     <th>Restricción del Equipo</th>
                     <th>Restricción del Usuario</th>
@@ -292,15 +320,16 @@ if ($form_submitted) {
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="text" name="filter-mac" value="<?= htmlspecialchars($filters['mac']) ?>"></td>
-                    <td><input type="text" name="filter-nomusuari" value="<?= htmlspecialchars($filters['nomusuari']) ?>"></td>
-                    <td><input type="text" name="filter-nom" value="<?= htmlspecialchars($filters['nom']) ?>"></td>
-                    <td><input type="text" name="filter-cognoms" value="<?= htmlspecialchars($filters['cognoms']) ?>"></td>
+                    <td><input type="text" name="filter-mac" value="<?= htmlspecialchars($filters['mac'] ?? '') ?>"></td>
+                    <td><input type="text" name="filter-nomusuari" value="<?= htmlspecialchars($filters['nomusuari'] ?? '') ?>"></td>
+                    <td><input type="text" name="filter-nom" value="<?= htmlspecialchars($filters['nom'] ?? '') ?>"></td>
+                    <td><input type="text" name="filter-cognoms" value="<?= htmlspecialchars($filters['cognoms'] ?? '') ?>"></td>
+                    <td><input type="text" name="filter-cognoms2" value="<?= htmlspecialchars($filters['cognoms2'] ?? '') ?>"></td>
                     <td>
                         <select name="filter-curs">
                             <option value="">Curso</option>
                             <?php foreach ($cursos as $curso): ?>
-                                <option value="<?= htmlspecialchars($curso) ?>" <?= $filters['curs'] == $curso ? 'selected' : '' ?>>
+                                <option value="<?= htmlspecialchars($curso) ?>" <?= ($filters['curs'] ?? '') == $curso ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($curso) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -310,7 +339,7 @@ if ($form_submitted) {
                         <select name="filter-restriccio_equipo">
                             <option value="">Restricción</option>
                             <?php foreach ($restriccion_equipos as $restriccion): ?>
-                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= $filters['restriccio_equipo'] == $restriccion ? 'selected' : '' ?>>
+                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= ($filters['restriccio_equipo'] ?? '') == $restriccion ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($restriccion) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -320,7 +349,7 @@ if ($form_submitted) {
                         <select name="filter-restriccio_usuario">
                             <option value="">Restricción</option>
                             <?php foreach ($restriccion_usuarios as $restriccion): ?>
-                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= $filters['restriccio_usuario'] == $restriccion ? 'selected' : '' ?>>
+                                <option value="<?= htmlspecialchars($restriccion) ?>" <?= ($filters['restriccio_usuario'] ?? '') == $restriccion ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($restriccion) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -330,13 +359,13 @@ if ($form_submitted) {
                         <select name="filter-aula">
                             <option value="">Clase</option>
                             <?php foreach ($clases_antena as $aula): ?>
-                                <option value="<?= htmlspecialchars($aula) ?>" <?= $filters['aula'] == $aula ? 'selected' : '' ?>>
+                                <option value="<?= htmlspecialchars($aula) ?>" <?= ($filters['aula'] ?? '') == $aula ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($aula) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </td>
-                    <td><input type="text" name="filter-fecha_conexion" value="<?= htmlspecialchars($filters['fecha_conexion']) ?>"></td>
+                    <td><input type="text" name="filter-fecha_conexion" value="<?= htmlspecialchars($filters['fecha_conexion'] ?? '') ?>"></td>
                 </tr>
             </tbody>
         </table>
@@ -360,9 +389,13 @@ if ($form_submitted) {
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'nom', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                     </th>
-                    <th>Apellidos<br>
+                    <th>Apellido 1<br>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
+                    <th>Apellido 2<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms2', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'cognoms2', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                     </th>
                     <th>Curso<br>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
@@ -389,15 +422,16 @@ if ($form_submitted) {
             <tbody>
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?= htmlspecialchars($row['mac']) ?></td>
-                        <td><?= htmlspecialchars($row['nomusuari']) ?></td>
-                        <td><?= htmlspecialchars($row['nom']) ?></td>
-                        <td><?= htmlspecialchars($row['cognoms']) ?></td>
-                        <td><?= htmlspecialchars($row['curs']) ?></td>
-                        <td><?= htmlspecialchars($row['restriccio_equipo']) ?></td>
-                        <td><?= htmlspecialchars($row['restriccio_usuario']) ?></td>
-                        <td><?= htmlspecialchars($row['clase_antena']) ?></td>
-                        <td><?= htmlspecialchars(date('d-m-Y H:i', strtotime($row['fecha_conexion']))) ?></td>
+                        <td><?= htmlspecialchars($row['mac'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['nomusuari'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['nom'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['cognoms'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['cognoms2'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['curs'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['restriccio_equipo'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['restriccio_usuario'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['clase_antena'] ?? '') ?></td>
+                        <td><?= htmlspecialchars(isset($row['fecha_conexion']) ? date('d-m-Y H:i', strtotime($row['fecha_conexion'])) : '') ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
