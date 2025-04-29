@@ -2,17 +2,24 @@
 // Conexión a la base de datos
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = ""; // Deja vacío si no hay contraseña
 $dbname = "pruebas";
+
+// Aumentar el tiempo de ejecución del script
+set_time_limit(300); // 5 minutos
 
 // Nombre del archivo de respaldo
 $backup_file = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
 
 // Ruta completa de mysqldump (ajusta según tu sistema)
-$mysqldump_path = "/usr/bin/mysqldump"; // Cambia esta ruta si es necesario
+$mysqldump_path = "C:\\xampp\\mysql\\bin\\mysqldump.exe"; // Ruta para sistemas Windows
 
-// Comando para exportar la base de datos
-$command = "$mysqldump_path -u $username -p$password $dbname > $backup_file";
+// Comando para exportar la base de datos con manejo de contraseña vacía
+if ($password === "") {
+    $command = "$mysqldump_path -u $username --result-file=$backup_file $dbname";
+} else {
+    $command = "$mysqldump_path -u $username -p'$password' --result-file=$backup_file $dbname";
+}
 
 // Ejecutar el comando
 exec($command . " 2>&1", $output, $return_var);
