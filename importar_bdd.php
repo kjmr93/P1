@@ -1,4 +1,10 @@
 <?php
+// Verificar si el usuario ha iniciado sesión y si tiene permisos de administrador
+if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COOKIE['es_administrador'] !== "1") {
+    header("Location: login.php?error=Debe%20iniciar%20sesión%20como%20administrador%20para%20acceder.");
+    exit();
+}
+
 // Conexión a la base de datos
 $servername = "localhost";
 $username = "root";
@@ -13,18 +19,21 @@ if (isset($_FILES['sql_file']) && $_FILES['sql_file']['error'] === UPLOAD_ERR_OK
     // Ruta completa del comando mysql (ajusta según tu sistema)
     $mysql_path = "C:\\xampp\\mysql\\bin\\mysql.exe"; // Ruta para sistemas Windows
 
-    // Crear conexión a la base de datos para eliminar todas las tablas
+    // Crear conexión a la base de datos para eliminar todas las tablas excepto "profesorado"
     $conn = new mysqli($servername, $username, $password, $dbname);
 
     if ($conn->connect_error) {
         die("Conexión fallida: " . $conn->connect_error);
     }
 
-    // Eliminar todas las tablas de la base de datos
+    // Eliminar todas las tablas excepto "profesorado"
     $conn->query("SET FOREIGN_KEY_CHECKS = 0"); // Desactivar restricciones de claves foráneas
     if ($result = $conn->query("SHOW TABLES")) {
         while ($row = $result->fetch_array()) {
-            $conn->query("DROP TABLE " . $row[0]);
+            $table_name = $row[0];
+            if ($table_name !== "profesorado") {
+                $conn->query("DROP TABLE " . $table_name);
+            }
         }
     }
     $conn->query("SET FOREIGN_KEY_CHECKS = 1"); // Reactivar restricciones de claves foráneas

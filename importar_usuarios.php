@@ -2,6 +2,12 @@
 require 'vendor/autoload.php'; // Asegúrate de tener PHPSpreadsheet instalado
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
+// Verificar si el usuario ha iniciado sesión y si tiene permisos de administrador
+if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COOKIE['es_administrador'] !== "1") {
+    header("Location: login.php?error=Debe%20iniciar%20sesión%20como%20administrador%20para%20acceder.");
+    exit();
+}
+
 // Conexión a la base de datos
 $servername = "localhost";
 $username = "root";

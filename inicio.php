@@ -1,4 +1,10 @@
 <?php
+// Verificar si el usuario ha iniciado sesión
+if (!isset($_COOKIE['usuario'])) {
+    header("Location: login.php?error=Debe%20iniciar%20sesión%20primero.");
+    exit();
+}
+
 // Conexión a la base de datos
 $servername = "localhost";
 $username = "root";
@@ -49,6 +55,7 @@ $conn->close();
             padding: 20px;
             text-align: center;
             margin: 0;
+            position: relative;
         }
         .alerta {
             padding: 15px;
@@ -91,6 +98,24 @@ $conn->close();
         .boton:hover {
             background-color: #357ab8;
         }
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+            padding: 5px 10px;
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .logout-button:hover {
+            background-color: #4a90e2;
+            color: white;
+            border: 1px solid white;
+        }
         .hidden {
             display: none;
         }
@@ -104,7 +129,10 @@ $conn->close();
     </style>
 </head>
 <body>
-    <h1>Página de Inicio</h1>
+    <h1>
+        Página de Inicio
+        <a href="logout.php" class="logout-button">Log out</a>
+    </h1>
     <div class="alerta <?php echo $alert_class; ?>">
         <?php echo $alert_message; ?>
     </div>

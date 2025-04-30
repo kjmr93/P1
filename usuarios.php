@@ -1,4 +1,10 @@
 <?php
+// Verificar si el usuario ha iniciado sesión
+if (!isset($_COOKIE['usuario'])) {
+    header("Location: login.php?error=Debe%20iniciar%20sesión%20primero.");
+    exit();
+}
+
 // Conexión a la base de datos
 $servername = "localhost";
 $username = "root";
