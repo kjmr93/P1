@@ -98,6 +98,24 @@ $conn->close();
         .boton:hover {
             background-color: #357ab8;
         }
+
+        .boton2 {
+            background-color: #77dd77;
+            color: #333;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1 1 calc(50% - 20px);
+            max-width: calc(50% - 20px);
+        }
+
+        .boton2:hover {
+            background-color: #5ca65c;
+        }
+
         .logout-button {
             position: absolute;
             top: 10px;
@@ -139,19 +157,19 @@ $conn->close();
     <div class="botones-container">
         <button class="boton" onclick="window.location.href='historial.php'">Historial de Conexiones</button>
         <button class="boton" onclick="window.location.href='incidencias.php'">Historial de Incidencias</button>
-        <button class="boton" onclick="window.location.href='historial2.php'">Borrar Conexiones</button>
-        <button class="boton" onclick="window.location.href='incidencias2.php'">Borrar Incidencias</button>
+        <button class="boton2" onclick="window.location.href='historial2.php'">Borrar Conexiones</button>
+        <button class="boton2" onclick="window.location.href='incidencias2.php'">Borrar Incidencias</button>
         <button class="boton" onclick="window.location.href='equipos.php'">Datos de Equipos</button>
         <button class="boton" onclick="window.location.href='usuarios.php'">Datos de Usuarios</button>
         <button class="boton" onclick="window.location.href='antenas.php'">Datos de Antenas</button>
         <button class="boton" onclick="window.location.href='ultimas_conexiones.php'">Últimas Conexiones</button>
-        <button class="boton" onclick="window.location.href='exportar_bdd.php'">Exportar BDD</button>
-        <button class="boton" onclick="document.getElementById('importar-form').classList.toggle('hidden')">Importar BDD</button>
-        <button class="boton" onclick="window.location.href='profesorado.php'">Profesorado</button>    
+        <button class="boton2" onclick="window.location.href='exportar_bdd.php'">Exportar BDD</button>
+        <button class="boton2" onclick="document.getElementById('importar-form').classList.toggle('hidden')">Importar BDD</button>
+        <button class="boton2" onclick="window.location.href='profesorado.php'">Profesorado</button>    
     </div>
     <form id="importar-form" class="hidden" method="POST" action="importar_bdd.php" enctype="multipart/form-data">
         <input type="file" name="sql_file" accept=".sql" required>
-        <button type="submit" class="boton">Subir y Restaurar</button>
+        <button type="submit" class="boton2">Subir y Restaurar</button>
     </form>
 </body>
 </html>
