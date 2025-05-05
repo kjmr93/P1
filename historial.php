@@ -43,6 +43,7 @@ if ($form_submitted) {
         'cognoms' => isset($_GET['filter-cognoms']) ? $_GET['filter-cognoms'] : '',
         'cognoms2' => isset($_GET['filter-cognoms2']) ? $_GET['filter-cognoms2'] : '',
         'curs' => isset($_GET['filter-curs']) ? $_GET['filter-curs'] : '',
+        'clase' => isset($_GET['filter-clase']) ? $_GET['filter-clase'] : '',
         'restriccio_equipo' => isset($_GET['filter-restriccio_equipo']) ? $_GET['filter-restriccio_equipo'] : '',
         'restriccio_usuario' => isset($_GET['filter-restriccio_usuario']) ? $_GET['filter-restriccio_usuario'] : '',
         'aula' => isset($_GET['filter-aula']) ? $_GET['filter-aula'] : '',
@@ -61,6 +62,14 @@ $result_cursos = $conn->query("SELECT DISTINCT curs FROM usuaris WHERE curs IS N
 if ($result_cursos) {
     while ($row = $result_cursos->fetch_assoc()) {
         $cursos[] = $row['curs'];
+    }
+}
+
+// Obtener valores únicos de "Grupo"
+$result_clases = $conn->query("SELECT DISTINCT clase FROM usuaris WHERE clase IS NOT NULL AND clase != ''");
+if ($result_clases) {
+    while ($row = $result_clases->fetch_assoc()) {
+        $clases[] = $row['clase'];
     }
 }
 
@@ -97,6 +106,7 @@ if ($form_submitted) {
             u.cognoms,
             u.cognoms2,
             u.curs,
+            u.clase,
             h.restriccio AS restriccio_equipo,
             h.restriccio_usuari AS restriccio_usuario,
             UPPER(a.aula) AS clase_antena,
@@ -130,6 +140,8 @@ if ($form_submitted) {
                 $sql .= " AND u.cognoms2 LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms2
             } elseif ($key === 'curs') {
                 $sql .= " AND u.curs LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.curs
+            } elseif ($key === 'clase') {
+                $sql .= " AND u.clase LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.clase
             } else {
                 $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
             }
@@ -178,6 +190,8 @@ if ($form_submitted) {
                 $total_sql .= " AND u.cognoms2 LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.cognoms
             } elseif ($key === 'curs') {
                 $total_sql .= " AND u.curs LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.curs
+            } elseif ($key === 'clase') {
+                $total_sql .= " AND u.clase LIKE '%" . $conn->real_escape_string($value) . "%'"; // Especificar u.clase
             } else {
                 $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
             }
@@ -318,6 +332,7 @@ if ($form_submitted) {
                     <th>Apellido 1</th>
                     <th>Apellido 2</th>
                     <th>Curso</th>
+                    <th>Grupo</th>
                     <th>Restricción del Equipo</th>
                     <th>Restricción del Usuario</th>
                     <th>Clase de la Antena</th>
@@ -337,6 +352,16 @@ if ($form_submitted) {
                             <?php foreach ($cursos as $curso): ?>
                                 <option value="<?= htmlspecialchars($curso) ?>" <?= ($filters['curs'] ?? '') == $curso ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($curso) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="filter-clase">
+                            <option value="">Grupo</option>
+                            <?php foreach ($clases as $clase): ?>
+                                <option value="<?= htmlspecialchars($clase) ?>" <?= ($filters['clase'] ?? '') == $clase ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($clase) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -407,6 +432,10 @@ if ($form_submitted) {
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'curs', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
                     </th>
+                    <th>Grupo<br>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'clase', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
+                    </th>
                     <th>Restricción del Equipo<br>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'asc'])) ?>" class="asc">&#9650;</a>
                         <a href="?<?= http_build_query(array_merge($_GET, ['order_by' => 'restriccio_equipo', 'order_dir' => 'desc'])) ?>" class="desc">&#9660;</a>
@@ -434,6 +463,7 @@ if ($form_submitted) {
                         <td><?= htmlspecialchars($row['cognoms'] ?? '') ?></td>
                         <td><?= htmlspecialchars($row['cognoms2'] ?? '') ?></td>
                         <td><?= htmlspecialchars($row['curs'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($row['clase'] ?? '') ?></td>
                         <td><?= htmlspecialchars($row['restriccio_equipo'] ?? '') ?></td>
                         <td><?= htmlspecialchars($row['restriccio_usuario'] ?? '') ?></td>
                         <td><?= htmlspecialchars($row['clase_antena'] ?? '') ?></td>

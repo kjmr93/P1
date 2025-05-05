@@ -246,7 +246,26 @@ $total_pages = ceil($total_rows / $results_per_page);
                 echo "<td>$usuario</td>";
                 echo "<td>" . "********" . " <button class='show-password-btn' onclick=\"togglePassword(this, '$password')\">Mostrar contraseña</button></td>";
                 echo "<td>$rol</td>";
-                echo "<td>Opciones para ID $id</td>";
+                echo "<td>
+                    <button class='modify-user-btn' onclick=\"toggleForm('form-$id')\">Modificar usuario</button>
+                    <div id='form-$id' class='modify-form' style='display: none; margin-top: 10px;'>
+                        <form action='actualizar_profesorado.php' method='POST' onsubmit='return validarFormulario(\"$id\")' style='border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'>
+                            <input type='hidden' name='id' value='$id'>
+                            <label for='usuario-$id'>Usuario:</label>
+                            <input type='text' id='usuario-$id' name='usuario' value='$usuario' required style='width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;'>
+                            <label for='password-$id'>Contraseña:</label>
+                            <input type='password' id='password-$id' name='password' required style='width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;'>
+                            <label for='confirm_password-$id'>Confirmar Contraseña:</label>
+                            <input type='password' id='confirm_password-$id' name='confirm_password' required style='width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;'>
+                            <label for='rol-$id'>Rol:</label>
+                            <select id='rol-$id' name='rol' required style='width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;'>
+                                <option value='0' " . ($rol === "Administrador" ? "selected" : "") . ">Administrador</option>
+                                <option value='1' " . ($rol === "Usuario" ? "selected" : "") . ">Usuario</option>
+                            </select>
+                            <button type='submit' style='background-color: #4a90e2; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;'>Guardar cambios</button>
+                        </form>
+                    </div>
+                </td>";
                 echo "</tr>";
             }
         } else {
@@ -255,6 +274,24 @@ $total_pages = ceil($total_rows / $results_per_page);
         ?>
     </tbody>
 </table>
+
+<script>
+    function toggleForm(formId) {
+        const form = document.getElementById(formId);
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function validarFormulario(id) {
+        const password = document.getElementById(`password-${id}`).value;
+        const confirmPassword = document.getElementById(`confirm_password-${id}`).value;
+
+        if (password !== confirmPassword) {
+            alert('Las contraseñas no coinciden. Por favor, inténtelo de nuevo.');
+            return false;
+        }
+        return true;
+    }
+</script>
 
 <div class="pagination">
     <?php
