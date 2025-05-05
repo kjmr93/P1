@@ -147,6 +147,7 @@ $conn->close();
         <button class="boton" onclick="window.location.href='ultimas_conexiones.php'">Últimas Conexiones</button>
         <button class="boton" onclick="window.location.href='exportar_bdd.php'">Exportar BDD</button>
         <button class="boton" onclick="document.getElementById('importar-form').classList.toggle('hidden')">Importar BDD</button>
+        <button class="boton" onclick="window.location.href='profesorado.php'">Profesorado</button>    
     </div>
     <form id="importar-form" class="hidden" method="POST" action="importar_bdd.php" enctype="multipart/form-data">
         <input type="file" name="sql_file" accept=".sql" required>
