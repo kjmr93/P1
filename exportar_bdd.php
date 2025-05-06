@@ -11,13 +11,10 @@ $username = "root";
 $password = ""; // Deja vacío si no hay contraseña
 $dbname = "pruebas";
 
-// Aumentar el tiempo de ejecución del script
-set_time_limit(300); // 5 minutos
-
 // Nombre del archivo de respaldo
 $backup_file = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
 
-// Ruta completa de mysqldump (ajusta según tu sistema)
+// Ruta completa de mysqldump
 $mysqldump_path = "C:\\xampp\\mysql\\bin\\mysqldump.exe"; // Ruta para sistemas Windows
 
 // Comando para exportar la base de datos con manejo de contraseña vacía

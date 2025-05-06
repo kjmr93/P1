@@ -56,7 +56,7 @@ $sql = "SELECT id, incidencia, usuario, admins, equipo, clase, snap_installat, s
 
 // Aplicar filtros
 foreach ($filters as $key => $value) {
-    if ($value !== '') { // Detectar correctamente valores como 0
+    if ($value !== '') { 
         $sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
     }
 }
@@ -88,16 +88,16 @@ $total_sql = "SELECT COUNT(*) FROM incidencias WHERE 1=1";
 foreach ($filters as $key => $value) {
     if (!empty($value)) {
         $total_sql .= " AND $key LIKE '%" . $conn->real_escape_string($value) . "%'";
+     }
     }
-}
 
-if (!empty($fecha_inicio) && !empty($fecha_fin)) {
-    $total_sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin) . "'";
-}
+    if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+        $total_sql .= " AND fecha BETWEEN '" . $conn->real_escape_string($fecha_inicio) . "' AND '" . $conn->real_escape_string($fecha_fin) . "'";
+    }
 
-if (!$incluir_solucionados) {
-    $total_sql .= " AND estado = 0";
-}
+    if (!$incluir_solucionados) {
+        $total_sql .= " AND estado = 0";
+    }
 
 $total_result = $conn->query($total_sql);
 $total_rows = $total_result->fetch_row()[0];

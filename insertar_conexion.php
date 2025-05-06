@@ -131,6 +131,5 @@ if ($insertar_datos) {
 
 $conn->close();
 
-header("Location: historial.php");
 exit();
 ?>

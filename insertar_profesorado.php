@@ -1,11 +1,4 @@
 <?php
-// filepath: /workspaces/P1/insertar_profesorado.php
-
-// Activar la visualización de errores para depuración
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Verificar si el usuario ha iniciado sesión y si tiene permisos de administrador
 if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COOKIE['es_administrador'] !== "1") {
     header("Location: login.php?error=Debe%20iniciar%20sesión%20como%20administrador%20para%20acceder.");
