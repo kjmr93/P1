@@ -5,11 +5,8 @@ if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COO
     exit();
 }
 
-// Conexión a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = ""; // Deja vacío si no hay contraseña
-$dbname = "pruebas";
+// Incluir la conexión a la base de datos
+require_once 'conexion.php';
 
 // Nombre del archivo de respaldo
 $backup_file = 'backup_' . date('Y-m-d_H-i-s') . '.sql';

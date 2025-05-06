@@ -5,11 +5,8 @@ if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COO
     exit();
 }
 
-// Conexión a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = ""; // Deja vacío si no hay contraseña
-$dbname = "pruebas";
+// Incluir la conexión a la base de datos
+require_once 'conexion.php';
 
 // Verificar si se ha subido un archivo
 if (isset($_FILES['sql_file']) && $_FILES['sql_file']['error'] === UPLOAD_ERR_OK) {

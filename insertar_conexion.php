@@ -1,15 +1,7 @@
 <?php
 // Conexión
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "pruebas";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
+// Incluir la conexión a la base de datos
+require_once 'conexion.php';
 
 // Datos petición
 $mac = $_POST['mac'];

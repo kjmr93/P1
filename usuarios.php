@@ -5,17 +5,8 @@ if (!isset($_COOKIE['usuario'])) {
     exit();
 }
 
-// Conexión a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "pruebas";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
-}
+// Incluir la conexión a la base de datos
+require_once 'conexion.php';
 
 // Obtener valores únicos de la columna 'curs'
 $curs_sql = "SELECT DISTINCT curs FROM usuaris ORDER BY curs ASC";
