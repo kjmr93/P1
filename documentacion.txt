@@ -140,6 +140,9 @@ El proyecto está organizado en los siguientes archivos principales:
 ### Posibles Mejoras
 1. **Logs de Actividad**:
    - Registrar acciones importantes, como inicio de sesión y modificaciones de datos.
+2. **Revisión del CSS**:
+   - La mayoría de los estilos CSS están incrustados dentro de los .php porque son específicos de cada página.
+     Se puede ajustar el contenido de los distintos div con id personalizados y ajustar todos los estilos en un archivo styles.css
 
 ### Dependencias
 - PHP 8.1 o superior.
