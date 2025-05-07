@@ -1,0 +1,156 @@
+# Documentación del Proyecto
+
+## Funcionamiento
+
+### Descripción General
+Este proyecto es un sistema de gestión que permite a los usuarios administrar datos relacionados con usuarios, equipos, incidencias, historial de conexiones, y más.
+Está diseñado para ser utilizado por administradores y usuarios con diferentes niveles de permisos.
+La interfaz principal incluye funcionalidades como login, gestión de usuarios, visualización de datos, y exportación/importación de bases de datos.
+
+
+
+1. Login:
+    - Los usuarios acceden al sistema a través de la página `login.php`.
+    - Se valida el usuario y contraseña en `procesar_login.php`.
+    - Los administradores tienen acceso a funcionalidades de edición de registros en la BDD, mientras que los usuarios regulares tienen permisos búsqueda.
+    - Muestra errores según proceda (Usuario o contraseña incorrecto, debe iniciar sesión como administrador, etc.)
+
+2. Página de Inicio:
+    - Se divide en 1 aviso permanente y 11 botones.
+    - El aviso saldrá en color rojo si hay alguna incidencia pendiente o en verde si no hay ninguna incidencia pendiente
+    - Los botones de color azul son de uso general independientemente del tipo de usuario
+    - Los botones de color verde son de uso administrativo, si alguien sin permisos administrativos intenta acceder, se le devolverá a la página de login diciéndole que debe iniciar sesión como administrador.
+    
+3. Historial de Conexiones:
+    - La página `historial.php` permite visualizar y filtrar las conexiones realizadas por los usuarios.
+    - Incluye filtros avanzados como curso, clase, y restricciones.
+
+4. Historial de Incidencias:
+    - Las incidencias se gestionan en `incidencias.php`.
+    - Los usuarios administradores pueden solucionar incidencias.
+    - Incluye filtros avanzados como tipo de incidencia, usuario, curso, etc.
+    - Se pueden mostrar y ocultar incidencias previas ya solucionadas.
+
+5. Borrar conexiones:
+    - De acceso único con usuario administrador.
+    - El historial de conexiones se puede borrar por completo o parcialmente
+
+6. Borrar Incidencias:
+    - De acceso único con usuario administrador.
+    - El historiaL de incidencias se puede borrar por completo o parcialmente
+
+7. Datos de Equipos:
+    - No se pueden hacer modificaciones
+    - Muestra todos los datos de los equipos registrados en la base de datos incluyendo identificaciones únicas (MAC y usuario)
+    - Filtros avanzados incluidos para buscar equipos específicos
+
+8. Datos de Usuarios:
+    - Muestra todos los alumnos dados de alta actualmente en el centro.
+    - Incluye botón de opciones para importar o actualizar los usuarios importando archivos de excel.
+      Esta función es de uso administrativo, si se intenta utilizar sin permisos administrativos cerrará la sesión volviendo a la página de login.
+    - Filtros avanzados para buscar por alumnos específicos.
+    - Incluye botón para modificar restricción del alumno, de uso administrativo.
+
+9. Datos de Antenas:
+    - Listado de las antenas del instituto con la clase en la que están colocadas y su MAC.
+
+10. Últimas conexiones:
+    - Buscador que permite filtrar por fecha de restauración, restricción de equipo o restricción de usuario.
+    - Permite buscar la última fecha de conexión de los equipos que lleven más de X días(a escoger) sin conectarse.
+
+11. Exportar BDD:
+    - Botón de uso administrativo que permite exportar la BDD completa a modo de backup.
+
+12. Importar BDD:
+    - Botón que abre un desplegable en el que se puede adjuntar un archivo .sql para restaurar la BDD
+    - El botón no es de uso administrativo, el desplegable se abrirá, pero el botón para subir el archivo .sql SÍ es de uso administrativo.
+
+13. Profesorado:
+    - De uso administratrivo.
+    - Incluye el listado de usuarios del programa, con nombres y roles (usuario y administrador)
+    - Incluye funcionalidades como mostrar contraseñas (cifradas en hash) y modificar usuarios para cambiar permisos y contraseñas.
+    - Incluye formulario para añadir nuevos usuarios.
+
+
+---
+
+## Parte 2: Apartados Técnicos
+
+### Estructura del Proyecto
+El proyecto está organizado en los siguientes archivos principales:
+- **Autenticación**:
+  - `login.php`: Página de inicio de sesión.
+  - `procesar_login.php`: Procesa las credenciales de inicio de sesión.
+  - `logout.php`: Cierra la sesión del usuario.
+
+- **Gestión de Datos**:
+  - `usuarios.php`: Gestión de usuarios.
+  - `equipos.php`: Gestión de equipos.
+  - `profesorado.php`: Gestión de profesorado.
+  - `incidencias.php` y `incidencias2.php`: Gestión de incidencias.
+  - `historial.php` y `historial2.php`: Historial de conexiones.
+
+- **Importación y Exportación**:
+  - `importar_usuarios.php`: Importa datos de usuarios desde un archivo.
+  - `actualizar_usuarios.php`: Actualiza datos de usuarios.
+  - `exportar_bdd.php`: Exporta la base de datos.
+  - `importar_bdd.php`: Importa la base de datos.
+
+- **Conexión a la Base de Datos**:
+  - `conexion.php`: Archivo central para la conexión a la base de datos.
+
+- **Triggers**:
+  - `trigger.txt`: Contiene lógica para insertar incidencias automáticamente en la base de datos.
+
+### Tecnologías Utilizadas
+- **Lenguaje**: PHP para la lógica del servidor.
+- **Base de Datos**: MySQL para almacenar datos de usuarios, equipos, incidencias, y más.
+- **Frontend**: HTML, CSS, y JavaScript para la interfaz de usuario.
+- **Librerías**:
+  - PHPSpreadsheet para la importación/exportación de archivos Excel.
+
+### Seguridad
+- **Autenticación**:
+  - Uso de cookies para verificar sesiones activas. Las cookies duran 10 minutos. Creadas en `procesar_login.php`
+  - Restricción de acceso a páginas según el rol del usuario.
+- **Validación de Datos**:
+  - Uso de `htmlspecialchars` para prevenir ataques XSS.
+  - Uso de consultas preparadas (`prepare` y `bind_param`) para prevenir inyecciones SQL.
+
+### Funcionalidades Clave
+- **Filtros Avanzados**:
+  - Todas las páginas de gestión incluyen filtros para buscar datos específicos.
+- **Paginación**:
+  - Implementada en páginas con grandes volúmenes de datos, como `usuarios.php` y `equipos.php`.
+- **Exportación e Importación**:
+  - Respaldo y restauración de la base de datos mediante comandos `mysqldump` y `mysql`.
+- **Importación y Actualización de usuarios**:
+  - Los archivos `actualizar_usuarios.php` y `importar_usuarios.php` están configurados para leer el archivo excel de ejemplo de alumnos aportado,
+    Si el orden de las columnas del excel cambia, habrá que hacer ajustes en estos dos archivos.
+
+### Consideraciones de Diseño
+- **Interfaz de Usuario**:
+  - Diseño responsivo con estilos CSS personalizados.
+  - Botones y formularios intuitivos para facilitar la navegación.
+- **Modularidad**:
+  - Separación de lógica en diferentes archivos para facilitar el mantenimiento.
+- **Escalabilidad**:
+  - Uso de paginación y filtros para manejar grandes volúmenes de datos.
+
+### Posibles Mejoras
+1. **Logs de Actividad**:
+   - Registrar acciones importantes, como inicio de sesión y modificaciones de datos.
+
+### Dependencias
+- PHP 8.1 o superior.
+- MySQL 5.7 o superior.
+- Servidor web (Apache recomendado).
+- Extensiones de PHP: `mysqli`, `mbstring`.
+
+### Configuración
+1. **Base de Datos**:
+   - Configurar las credenciales en `conexion.php`.
+2. **Servidor**:
+   - Asegurarse de que el servidor tenga permisos para ejecutar `mysqldump` y `mysql`.
+3. **Librerías**:
+   - Instalar PHPSpreadsheet mediante Composer (`composer require phpoffice/phpspreadsheet`).
