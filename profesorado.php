@@ -210,6 +210,11 @@ $total_pages = ceil($total_rows / $results_per_page);
         }
         return true;
     }
+    function confirmarBorradoUsuario(event) {
+        if (!confirm("¿Seguro que desea borrar este usuario?")) {
+            event.preventDefault();
+        }
+    }
 </script>
 
 <table>
@@ -239,6 +244,10 @@ $total_pages = ceil($total_rows / $results_per_page);
                 echo "<td>$rol</td>";
                 echo "<td>
                     <button class='modify-user-btn' onclick=\"toggleForm('form-$id')\">Modificar usuario</button>
+                    <form action='borrar_profesorado.php' method='POST' style='display: inline;' onsubmit='confirmarBorradoUsuario(event)'>
+                        <input type='hidden' name='id' value='$id'>
+                        <button type='submit' class='modify-user-btn'>Borrar usuario</button>
+                    </form>
                     <div id='form-$id' class='modify-form' style='display: none; margin-top: 10px;'>
                         <form action='actualizar_profesorado.php' method='POST' onsubmit='return validarFormulario(\"$id\")' style='border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'>
                             <input type='hidden' name='id' value='$id'>
