@@ -9,10 +9,11 @@ if (!isset($_COOKIE['usuario']) || !isset($_COOKIE['es_administrador']) || $_COO
 require_once 'conexion.php';
 
 // Nombre del archivo de respaldo
-$backup_file = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
+$backup_file = '/tmp/backup_' . date('Y-m-d_H-i-s') . '.sql';
 
 // Ruta completa de mysqldump
-$mysqldump_path = "C:\\xampp\\mysql\\bin\\mysqldump.exe"; // Ruta para sistemas Windows
+//$mysqldump_path = "C:\\xampp\\mysql\\bin\\mysqldump.exe"; // Ruta para sistemas Windows
+$mysqldump_path = "/usr/bin/mysqldump"; // Ruta para sistemas Linux
 
 // Comando para exportar la base de datos con manejo de contraseña vacía
 if ($password === "") {

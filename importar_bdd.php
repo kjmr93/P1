@@ -14,8 +14,8 @@ if (isset($_FILES['sql_file']) && $_FILES['sql_file']['error'] === UPLOAD_ERR_OK
     $file_tmp = $_FILES['sql_file']['tmp_name'];
 
     // Ruta completa del comando mysql (ajusta según tu sistema)
-    $mysql_path = "C:\\xampp\\mysql\\bin\\mysql.exe"; // Ruta para sistemas Windows
-
+    $mysql_path = "/usr/bin/mysql"; // Ruta para sistemas Linux
+    
     // Crear conexión a la base de datos para eliminar todas las tablas excepto "profesorado"
     $conn = new mysqli($servername, $username, $password, $dbname);
 

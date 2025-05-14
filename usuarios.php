@@ -55,7 +55,7 @@ $filters = [
 ];
 
 // Ordenación
-$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'nomusuari';
+$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'cognoms';
 $order_dir = isset($_GET['order_dir']) && $_GET['order_dir'] == 'desc' ? 'desc' : 'asc';
 
 // Construir la consulta SQL con paginación, filtros y ordenación
